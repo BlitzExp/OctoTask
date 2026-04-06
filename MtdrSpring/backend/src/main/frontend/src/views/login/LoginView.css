@@ -1,0 +1,32 @@
+.pageTitle {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #ffff;
+    text-align: center;
+}
+
+.loginLabel {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #ffff;
+    text-align: center;
+}
+
+.loginContainer {
+    max-width: 400px;
+    margin: 200px auto;
+    padding: 20px;
+    background-color: #333;
+    border-radius: 8px;
+}
+
+.loginInput {
+    margin: 0px 100px;
+    padding: 10px 0px;
+}
+
+.loginButton {
+    display: block;
+}

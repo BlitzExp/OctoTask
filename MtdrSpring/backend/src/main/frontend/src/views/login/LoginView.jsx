@@ -12,13 +12,13 @@ function LoginView({ onLogin }) {
 
   return (
     <main>
-      <div>
+      <div class="loginContainer">
         <form onSubmit={handleSubmit}>
-          <h2>Iniciar Sesión</h2>
+          <h2 class="pageTitle">Iniciar Sesión</h2>
           
           <div>
-            <label>Nombre de usuario</label>
-            <input
+            <label class="loginLabel">Nombre de usuario</label>
+            <input class="loginInput"
               id="username"
               type="text"
               placeholder="Ingrese su usuario"
@@ -29,8 +29,8 @@ function LoginView({ onLogin }) {
           </div>
 
           <div>
-            <label>Contraseña</label>
-            <input
+            <label class="loginLabel">Contraseña</label>
+            <input class="loginInput"
               id="password"
               type="password"
               placeholder="Ingrese su contraseña"
@@ -39,7 +39,7 @@ function LoginView({ onLogin }) {
               required
             />
           </div>
-          <button type="submit">Iniciar Sesión</button>
+          <button type="submit" class="loginButton">Iniciar Sesión</button>
         </form>
       </div>
     </main>

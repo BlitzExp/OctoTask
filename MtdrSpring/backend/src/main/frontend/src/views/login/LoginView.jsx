@@ -16,7 +16,7 @@ function LoginView({ onLogin }) {
         <form onSubmit={handleSubmit}>
           <h2 class="pageTitle">Iniciar Sesión</h2>
           
-          <div>
+          <div class="inputGroup">
             <label class="loginLabel">Nombre de usuario</label>
             <input class="loginInput"
               id="username"
@@ -28,7 +28,7 @@ function LoginView({ onLogin }) {
             />
           </div>
 
-          <div>
+          <div class="inputGroup">
             <label class="loginLabel">Contraseña</label>
             <input class="loginInput"
               id="password"

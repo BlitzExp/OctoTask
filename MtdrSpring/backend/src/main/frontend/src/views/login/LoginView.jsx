@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './LoginView.css';
+import logo from '../../assets/logo.png';
 
-function LoginView({ onLogin }) {
+function LoginView({ onLogin, onGoToRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -14,6 +15,16 @@ function LoginView({ onLogin }) {
     <main>
       <div class="loginContainer">
         <form onSubmit={handleSubmit}>
+
+          <div class="card-header">
+            <div class="brand-title">
+              <img src={logo} alt="OctoTask" class="brand-icon" />
+              <h2 class="brand-text">OCTO</h2>
+              <h2 class="brand-text2">Task</h2>
+            </div>
+            <p class="brand-subtitle">More arms for your tasks</p>
+          </div>
+
           <h2 class="pageTitle">Iniciar Sesión</h2>
           
           <div class="inputGroup">
@@ -40,6 +51,7 @@ function LoginView({ onLogin }) {
             />
           </div>
           <button type="submit" class="loginButton">Iniciar Sesión</button>
+          <span class="underlinedText" onClick={ () => onGoToRegister('register')}> Registrar </span>
         </form>
       </div>
     </main>

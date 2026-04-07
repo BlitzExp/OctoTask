@@ -5,17 +5,18 @@
 	width: 100vw;
 	min-height: 100vh;
 	overflow: hidden;
+	overflow-y: auto;
 }
 
 .background-layer {
-	position: absolute;
+	position: fixed;
 	inset: 0;
 	background: linear-gradient(180deg, #0A0A0A 0%, #1B0C33 100%);
 	overflow: hidden;
 }
 
 .background-layer-authenticated {
-	position: absolute;
+	position: fixed;
 	inset: 0;
 	background: linear-gradient(180deg, #0A0A0A 0%, #4C2F7E 100%);
 	overflow: hidden;

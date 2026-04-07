@@ -46,6 +46,8 @@ function App() {
     setCurrView(view);
   }
 
+  
+
   if (!isAuthenticated) {
     return (
       <>

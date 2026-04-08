@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './LoginView.css';
+import logo from '../../assets/logo.png';
 
-function LoginView({ onLogin }) {
+function LoginView({ onLogin, onGoToRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -12,34 +13,43 @@ function LoginView({ onLogin }) {
 
   return (
     <main>
-      <div>
+      <div class="loginContainer">
         <form onSubmit={handleSubmit}>
-          <h2>Iniciar Sesión</h2>
+
+          <div class="card-header">
+            <div class="brand-title">
+              <img src={logo} alt="OctoTask" class="brand-icon" />
+              <h2 class="brand-text">OCTO</h2>
+              <h2 class="brand-text2">Task</h2>
+            </div>
+            <p class="brand-subtitle">More arms for your tasks</p>
+          </div>
           
-          <div>
-            <label>Nombre de usuario</label>
-            <input
+          <div class="inputGroup">
+            <label class="loginLabel">Username or Email:</label>
+            <input class="loginInput"
               id="username"
               type="text"
-              placeholder="Ingrese su usuario"
+              placeholder="Username..."
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
 
-          <div>
-            <label>Contraseña</label>
-            <input
+          <div class="inputGroup">
+            <label class="loginLabel">Password:</label>
+            <input class="loginInput"
               id="password"
               type="password"
-              placeholder="Ingrese su contraseña"
+              placeholder="Password..."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
-          <button type="submit">Iniciar Sesión</button>
+          <button type="submit" class="loginButton">Sign In</button>
+          <span class="underlinedText" onClick={ () => onGoToRegister('register')}> Register </span>
         </form>
       </div>
     </main>

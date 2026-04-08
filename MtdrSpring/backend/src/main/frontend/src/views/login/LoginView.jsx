@@ -24,15 +24,13 @@ function LoginView({ onLogin, onGoToRegister }) {
             </div>
             <p class="brand-subtitle">More arms for your tasks</p>
           </div>
-
-          <h2 class="pageTitle">Iniciar Sesión</h2>
           
           <div class="inputGroup">
-            <label class="loginLabel">Nombre de usuario</label>
+            <label class="loginLabel">Username or Email:</label>
             <input class="loginInput"
               id="username"
               type="text"
-              placeholder="Ingrese su usuario"
+              placeholder="Username..."
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -40,18 +38,18 @@ function LoginView({ onLogin, onGoToRegister }) {
           </div>
 
           <div class="inputGroup">
-            <label class="loginLabel">Contraseña</label>
+            <label class="loginLabel">Password:</label>
             <input class="loginInput"
               id="password"
               type="password"
-              placeholder="Ingrese su contraseña"
+              placeholder="Password..."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
-          <button type="submit" class="loginButton">Iniciar Sesión</button>
-          <span class="underlinedText" onClick={ () => onGoToRegister('register')}> Registrar </span>
+          <button type="submit" class="loginButton">Sign In</button>
+          <span class="underlinedText" onClick={ () => onGoToRegister('register')}> Register </span>
         </form>
       </div>
     </main>

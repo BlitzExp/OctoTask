@@ -12,6 +12,7 @@ function TaskDashboard() {
   return (
     <main className="task-dashboard-container">
       <h1 className="task-title">Task Dashboard</h1>
+      <button className="create-task-button">+ Create Task</button>
       <nav className="task-filter-bar">
         <ul className="task-filter-list">
           <li className={`task-filter-item${activeFilter === 'all' ? ' active' : ''}`} onClick={() => handleFilterClick('all')}>

@@ -20,7 +20,7 @@ import SideMenu from "./components/sideMenu/sideMenu";
 import LoginView from "./views/login/LoginView";
 import RegisterView from "./views/register/RegisterView";
 import TaskDashboard from "./views/taskDashboard/taskDashboard";
-import Analytics from "./views/analytics/analytics";
+import AnalyticsView from "./views/analytics/AnalyticsView";
 import Notifications from "./views/notifications/notifications";
 
 /* In this application we're using Function Components with the State Hooks
@@ -45,6 +45,8 @@ function App() {
   function handleNavigate(view) {
     setCurrView(view);
   }
+
+  
 
   if (!isAuthenticated) {
     return (
@@ -75,7 +77,7 @@ function App() {
         ) : currView === "taskDashboard" ? (
           <TaskDashboard />
         ) : currView === "analytics" ? (
-          <Analytics />
+          <AnalyticsView />
         ) : currView === "notifications" ? (
           <Notifications />
         ) : currView === "team" ? (

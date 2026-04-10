@@ -1,3 +1,42 @@
+.task-filter-item.active {
+    color: #ffd700;
+    border-bottom: 2.5px solid #ffd700;
+}
+
+.task-filter-bar {
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    margin-bottom: 20px;
+    margin-left: 7%;
+    margin-right: 5%;
+}
+
+.task-filter-list {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.task-filter-item {
+    font-size: 20px;
+    font-weight: 600;
+    color: #f0f0f0;
+    cursor: pointer;
+    border-bottom: 2.5px solid #f0f0f0;
+    padding-bottom: 2px;
+    transition: color 0.2s, border-bottom 0.2s;
+}
+
+.task-filter-item:hover {
+    color: #c2a501;
+    border-bottom: 2.5px solid #c2a501;
+}
+
+
+
 .task-title
 {
     font-size: 24px;
@@ -5,3 +44,108 @@
     margin-bottom: 20px;
     color: white;
 }
+
+.task-dashboard-container
+{
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.task-dashboard
+{
+    display: flex;
+    gap: 3%;
+    height: 100%;  
+    max-height: 100%;
+    min-height: 0;
+    flex: 1;
+    margin-bottom: 3%;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+.task-list
+{
+    border-radius: 25px;
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    outline: 3px solid #FFFFFF;
+}
+
+.task-list-header
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 3px solid #ccc;
+}
+
+.task-header-text
+{
+    font-size: 28px;
+    font-weight: bold;
+    color: #f0f0f0;
+}
+
+.task-late
+{
+    background-color: rgba(180, 97, 98, 0.35);
+    box-shadow: inset 0px 4px 50px 0px rgba(194, 70, 72, 0.65);
+}
+
+.task-late-header
+{
+    background-color: rgba(255, 142, 144, 0.50);
+    box-shadow: inset 0px 4px 50px 0px rgba(194, 70, 72, 0.65);
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+}
+
+.task-pending
+{
+    background-color: rgba(76, 140, 163, 0.35);
+    box-shadow: inset 0px 4px 50px 0px rgba(66, 162, 197, 0.65);
+}
+
+.task-pending-header
+{
+    background-color: rgba(76, 140, 163, 0.50);
+    box-shadow: inset 0px 4px 50px 0px rgba(66, 162, 197, 0.65);
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+}
+
+.task-progress
+{
+    background-color: rgba(241, 191, 79, 0.35);
+    box-shadow: inset 0px 4px 50px 0px rgba(248, 185, 49, 0.65);
+}
+
+.task-progress-header
+{
+    background-color: rgba(241, 191, 79, 0.50);
+    box-shadow: inset 0px 4px 50px 0px rgba(248, 185, 49, 0.65);
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+}
+
+.task-completed
+{
+    background-color: rgba(49, 179, 64, 0.35);
+    box-shadow: inset 0px 4px 50px 0px rgba(76, 137, 66, 0.65);
+}
+
+.task-completed-header
+{
+    background-color: rgba(44, 184, 60, 0.60);
+    box-shadow: inset 0px 4px 50px 0px rgba(52, 95, 45, 0.65);
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+}
+

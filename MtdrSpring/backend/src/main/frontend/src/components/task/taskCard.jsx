@@ -1,36 +1,9 @@
 import React from "react";
 import "./taskCard.css";
 import { FaUser } from "react-icons/fa";
+import getTimeUntilDue from "../../controller/operationsController";
 
 const TaskCard = ({ task, onCardClick }) => {
-  function daysUntilDue() {
-    const today = new Date();
-    const dueDate = new Date(task.sprintEndDate);
-    const timeDiff = dueDate - today;
-
-    const days = Math.floor(Math.abs(timeDiff) / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((Math.abs(timeDiff) / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((Math.abs(timeDiff) / 1000 / 60) % 60);
-
-    if (timeDiff < 0) {
-      if (days > 0) {
-        return `Late by ${days} day${days > 1 ? "s" : ""}`;
-      }
-      if (hours > 0) {
-        return `Late by ${hours} hour${hours > 1 ? "s" : ""}`;
-      }
-      return `Late by ${minutes} minute${minutes > 1 ? "s" : ""}`;
-    }
-
-    if (days > 0) {
-      return `Due in ${days} day${days > 1 ? "s" : ""}`;
-    }
-    if (hours > 0) {
-      return `Due in ${hours} hour${hours > 1 ? "s" : ""}`;
-    }
-    return `Due in ${minutes} minute${minutes > 1 ? "s" : ""}`;
-  }
-
   const getPriorityClass = () => {
     switch (task.getPriorityLabel()) {
       case "H":
@@ -69,7 +42,7 @@ const TaskCard = ({ task, onCardClick }) => {
       </div>
 
       <div className="card-overdue">
-        <div className="card-overdue-text">{daysUntilDue()}</div>
+        <div className="card-overdue-text">{getTimeUntilDue(task)}</div>
       </div>
 
       <div className="card-person">

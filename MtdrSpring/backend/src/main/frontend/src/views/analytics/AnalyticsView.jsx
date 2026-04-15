@@ -4,18 +4,12 @@ import './AnalyticsView.css';
 
 import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { PieChart, Pie, Cell } from 'recharts';
 import { LabelList } from 'recharts';
 
 
 
 function AnalyticsView() {
-    const statusData = [
-      { name: 'To Do', value: 12, color: '#d3d3d3' },
-      { name: 'In Progress', value: 10, color: '#ffd600' },
-      { name: 'Review', value: 14, color: '#7ecbff' },
-      { name: 'Completed', value: 64, color: '#7ed957' },
-    ];
+
   const [timeFilter, setTimeFilter] = useState('last7days');
 
   const mockData = {
@@ -39,6 +33,14 @@ function AnalyticsView() {
       { member: 'Eloy', tasks: 35, completedTasks: 24, lateTasks: 1 },
       { member: 'Juan', tasks: 20, completedTasks: 12, lateTasks: 5 },
       { member: 'Diego', tasks: 15, completedTasks: 9, lateTasks: 1 },
+    ],
+
+    timePerMember: [
+      { member: 'Edgar', totalTime: 6 },
+      { member: 'Jose', totalTime: 8 },
+      { member: 'Eloy', totalTime: 4 },
+      { member: 'Juan', totalTime: 7 },
+      { member: 'Diego', totalTime: 5 },
     ],
 
     recentActivity: [
@@ -148,51 +150,25 @@ function AnalyticsView() {
             </ResponsiveContainer>
           </div>
           <div className="analytics-chart-tasks">
-            <h2 className="analytics-chart-title">Tasks per Status</h2>
-            <div className='analytics-pie-char-container'>
-              <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
-                <ResponsiveContainer width="100%" height="100%" minHeight={180}>
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius="45%"
-                      outerRadius="70%"
-                      paddingAngle={2}
-                      label={({ percent }) => `${Math.round(percent * 100)}%`}
-                      isAnimationActive={false}
-                    >
-                      {statusData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className='analytics-pie-char-text-container'>
-                {statusData.map((entry, idx) => (
-                  <div key={entry.name} className='analytics-pie-char-legend'>
-                    <span 
-                      className='analytics-pie-char-text' 
-                      style={{ 
-                        display: 'inline-block', 
-                        width: 18, 
-                        height: 18, 
-                        borderRadius: 4, 
-                        marginRight: 8, 
-                        backgroundColor: entry.color, 
-                        verticalAlign: 'middle',
-                        border: '2px solid #444'
-                      }}
-                    />
-                    <span style={{ color: entry.color, fontWeight: 600 }}>{entry.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <h2 className="analytics-chart-title">Hours per Member</h2>
+            <ResponsiveContainer width="100%" height="90%">
+              <BarChart 
+                data={mockData.timePerMember}
+                margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                <XAxis dataKey="member" stroke="#fff" />
+                <YAxis stroke="#fff" />
+                <Tooltip 
+                  cursor={{ fill: '#444', opacity: 0.2 }} 
+                  contentStyle={{ background: '#222', border: 'none', color: '#fff' }} 
+                />
+                <Legend wrapperStyle={{ color: '#fff' }} />
+                <Bar dataKey="totalTime" fill="#8884d8" name="Total Hours" maxBarSize={40} radius={[8, 8, 0, 0]}>
+                  <LabelList dataKey="totalTime" position="top" fill="#fff" fontSize={14} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
         <div className="analytics-activity-row">

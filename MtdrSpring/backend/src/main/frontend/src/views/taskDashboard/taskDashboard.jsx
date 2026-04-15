@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TaskCard from '../../components/task/taskCard';
 import TaskModal from '../../components/task/TaskModal';
-import { getAllTasks } from '../../controller/tasksController';
+import { getAllTasks } from '../../controller/tasksViewController';
 import './taskDashboard.css';
 
 function TaskDashboard({ user }) {

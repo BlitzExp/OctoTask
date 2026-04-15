@@ -32,9 +32,12 @@ import Notifications from "./views/notifications/notifications";
 function App() {
   const [isAuthenticated, setAuthenticated] = useState(false);
   const [currView, setCurrView] = useState("login");
+  const [user, setUser] = useState(null);
 
   function handleLogin(username, password) {
     if (username.trim() && password.trim()) {
+      const userObject = { userId: 1, teamId: 1 }; // Mock user
+      setUser(userObject);
       setAuthenticated(true);
       setCurrView("taskDashboard");
       return true;
@@ -75,7 +78,7 @@ function App() {
         {currView === "home" ? (
           <h1>Home</h1>
         ) : currView === "taskDashboard" ? (
-          <TaskDashboard />
+          <TaskDashboard user={user} />
         ) : currView === "analytics" ? (
           <AnalyticsView />
         ) : currView === "notifications" ? (

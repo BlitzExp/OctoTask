@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { MdCalendarMonth, MdInsertDriveFile } from 'react-icons/md';
 import './AnalyticsView.css';
-// import { FaHome, FaFile, FaChartBar, FaBell, FaUsers, FaUser} from "react-icons/fa";
 
 import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';

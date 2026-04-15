@@ -40,7 +40,8 @@
 }
 
 .registerButton:hover {
-    background-color: #6a4ce5;
+    background-color:  linear-gradient(100deg, #3e2a99 0%, #533faf 100%) padding-box,
+          linear-gradient(#FFFFFF, #FFFFFF) border-box;
 }
 
 .registerButton:active {

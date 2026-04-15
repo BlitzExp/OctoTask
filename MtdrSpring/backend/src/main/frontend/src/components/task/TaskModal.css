@@ -38,7 +38,7 @@
     display: flex;
     background-color: rgb(44, 44, 44) ;
     border-radius: 35px 35px 0 0;
-    border: 3px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
     font-size: 1.25em;
     height: 10%;
     align-items: center;
@@ -147,7 +147,6 @@
     flex-direction: row;
     gap: 3%;
     flex-grow: 1;
-    overflow-y: auto;
     min-height: 0;
   }
 

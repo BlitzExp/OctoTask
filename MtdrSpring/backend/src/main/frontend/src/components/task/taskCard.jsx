@@ -1,7 +1,7 @@
 import React from "react";
 import "./taskCard.css";
 import { FaUser } from "react-icons/fa";
-import getTimeUntilDue from "../../controller/operationsController";
+import {getTimeUntilDue} from "../../controller/operationsController";
 
 const TaskCard = ({ task, onCardClick }) => {
   const getPriorityClass = () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaUser } from "react-icons/fa";
 
-import getTimeUntilDue from "../../controller/operationsController";
+import {getTimeUntilDue} from "../../controller/operationsController";
 import './TaskModal.css';
 
 const TaskModal = ({ task, onClose, onSave }) => {

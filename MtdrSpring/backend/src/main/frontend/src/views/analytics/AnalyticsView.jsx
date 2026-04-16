@@ -61,6 +61,13 @@ function AnalyticsView({ user }) {
       }
   }
 
+  async function handleSprintChange(e) {
+    const sprintId = e.target.value;
+    setSelectedSprint(sprintId);
+    await fetchDataForSprint(sprintId);
+  }
+  
+
 
 
 
@@ -119,7 +126,7 @@ function AnalyticsView({ user }) {
           <h1 className="analytics-title">Analytics</h1>
           <div className="analytics-filter-container">
             <p className="analytics-filter-label">Time Range:</p>
-            <select className="analytics-filter" value={selectedSprint} onChange={(e) => setSelectedSprint(e.target.value)}>
+            <select className="analytics-filter" value={selectedSprint} onChange={handleSprintChange}>
               {sprints.map((sprint) => (
                 <option key={sprint.id} value={sprint.id}>
                   {sprint.name}

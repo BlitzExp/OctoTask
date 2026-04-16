@@ -75,7 +75,7 @@ function App() {
         ) : currView === "taskDashboard" ? (
           <TaskDashboard user={user} />
         ) : currView === "analytics" ? (
-          <AnalyticsView />
+          <AnalyticsView user={user} />
         ) : currView === "notifications" ? (
           <Notifications />
         ) : currView === "team" ? (
@@ -87,7 +87,7 @@ function App() {
             <h1>Profile</h1>
           </main>
         ) : (
-          <TaskDashboard />
+          <TaskDashboard user={user} />
         )}
       </SideMenu>
     </Background>

@@ -6,11 +6,63 @@ import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { LabelList } from 'recharts';
 
+import { useEffect } from 'react';
+
+import { getAllSprintsController } from '../../controller/filterController';
+import { fetchNumTasksSprintController, fetchNumTasksAllController } from '../../controller/analyticsController';
 
 
-function AnalyticsView() {
+function AnalyticsView({ user }) {
+  const [sprints, setSprints] = useState([]);
+  const [selectedSprint, setSelectedSprint] = useState(null);
 
-  const [timeFilter, setTimeFilter] = useState('last7days');
+  const [analyticsData, setAnalyticsData] = useState(null);
+
+  useEffect(() => {
+    async function fetchSprints() {
+      try {
+        const sprintsData = await getAllSprintsController(user.teamId);
+        setSprints(sprintsData);
+        // agrega un valor que sea all Sprints con id allsprints
+        setSprints((prevSprints) => [
+          ...prevSprints,
+          { id: 'allsprints', name: 'All Sprints' }
+        ]);
+
+        if (sprintsData.length > 0) {
+          setSelectedSprint(sprintsData[0].id);
+        }
+
+
+        fetchDataForSprint(sprintsData.length > 0 ? sprintsData[0].id : 'allsprints');
+      } catch (error) {
+        console.error('Error fetching sprints:', error);
+      }
+    }
+    fetchSprints();
+  }, [user.teamId]);
+
+
+  async function fetchDataForSprint(sprintId) {
+    try{
+      if (sprintId === 'allsprints') {
+        // Lógica para obtener datos de todos los sprints
+        const totalTasks = await fetchNumTasksAllController(user.teamId);
+        setAnalyticsData(totalTasks);
+        console.log('Fetching data for all sprints', totalTasks);
+        
+      } else {
+        const data = await fetchNumTasksSprintController(user.teamId, sprintId);
+        setAnalyticsData(data);
+        console.log('Fetching data for sprint', sprintId, data);
+      }
+    } catch (error) {
+      console.error('Error fetching data for sprint:', error);
+      }
+  }
+
+
+
 
   const mockData = {
     totalTasks: 150,
@@ -52,6 +104,8 @@ function AnalyticsView() {
     ],
   }
 
+
+
   function getMissingAndOngoingTasks() {
     const { pendingTasks, lateTasks, inProgressTasks } = mockData;
     return pendingTasks + lateTasks + inProgressTasks;
@@ -65,11 +119,12 @@ function AnalyticsView() {
           <h1 className="analytics-title">Analytics</h1>
           <div className="analytics-filter-container">
             <p className="analytics-filter-label">Time Range:</p>
-            <select className="analytics-filter" value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)}>
-              <option value="last7days">Last 7 days</option>
-              <option value="last30days">Last 30 days</option>
-              <option value="last90days">Last 90 days</option>
-              <option value="lastyear">Last Year</option>
+            <select className="analytics-filter" value={selectedSprint} onChange={(e) => setSelectedSprint(e.target.value)}>
+              {sprints.map((sprint) => (
+                <option key={sprint.id} value={sprint.id}>
+                  {sprint.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>

@@ -15,10 +15,13 @@ public class TaskRowMapper implements RowMapper<Task> {
         task.setDescription(rs.getString("DESCRIPTION"));
         task.setUserID(rs.getInt("USER_ID"));
         task.setUserName(rs.getString("userName"));
-        task.setSprintID(rs.getInt("SPRINT_ID"));
+        task.setSprintID(rs.getInt("sprintNumber"));
         task.setStateID(rs.getInt("STATE_ID"));
         task.setPriorityID(rs.getInt("PRIORITY_ID"));
         task.setLinkToFile(rs.getString("LINK_TO_FILE"));
+        task.setSprintEndDate(rs.getTimestamp("sprintEndDate") != null ?
+                rs.getTimestamp("sprintEndDate").toLocalDateTime().atOffset(OffsetDateTime.now().getOffset()) : null);
+
 
         if (rs.getTimestamp("CREATED_AT") != null) {
             task.setCreatedAt(

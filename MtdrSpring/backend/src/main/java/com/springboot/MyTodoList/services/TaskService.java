@@ -18,12 +18,14 @@ public class TaskService {
     }
 
     public Object getTasksByTeamId(int teamId) {
-        String sql = "SELECT t.*, u.name as userName FROM TASKS t JOIN APP_USER u ON t.user_id = u.id WHERE u.team_id = ?";
+        String sql = "SELECT t.*, u.name as userName, s.end_date as sprintEndDate, s.SPRINT_NUM as sprintNumber FROM TASKS t JOIN APP_USER u ON t.user_id = u.id JOIN SPRINT s ON t.sprint_id = s.id WHERE u.team_id = ?";
         return jdbcTemplate.query(sql, new Object[] { teamId }, new TaskRowMapper());
     }
 
+
+    // Not tested
     public List<Task> getTasksByUserId(int userId) {
-        String sql = "SELECT t.*, u.name as userName FROM TASKS t JOIN APP_USER u ON t.user_id = u.id WHERE t.user_id = ?";
+        String sql = "SELECT t.*, u.name as userName, s.end_date as sprintEndDate, s.SPRINT_NUM as sprintNumber  FROM TASKS t JOIN APP_USER u ON t.user_id = u.id JOIN SPRINT s ON t.sprint_id = s.id WHERE t.user_id = ?";
         return jdbcTemplate.query(sql, new Object[] { userId }, new TaskRowMapper());
     }
 }

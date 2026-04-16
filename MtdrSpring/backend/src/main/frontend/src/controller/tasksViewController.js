@@ -5,7 +5,7 @@ export async function fetchTeamTasksCon(teamId) {
   try {
     console.log("Fetching tasks for team ID:", teamId);
     const tasks = await tasksService.fetchTeamTasks(teamId);
-    console.log("Tasks fetched for team:");
+    console.log("Tasks fetched for team: ", tasks);
     //return tasks;
     return tasks.map(
       (taskData) =>

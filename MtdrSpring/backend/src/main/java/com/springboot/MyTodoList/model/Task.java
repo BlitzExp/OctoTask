@@ -10,6 +10,8 @@ public class Task {
     private int userID;
     private String userName;
     private int sprintID;
+    private int sprintNumber;
+    private OffsetDateTime sprintEndDate;
     private int stateID;
     private int priorityID;
     private String linkToFile;
@@ -67,6 +69,22 @@ public class Task {
 
     public void setSprintID(int sprintID) {
         this.sprintID = sprintID;
+    }
+
+    public int getSprintNumber() {
+        return sprintNumber;
+    }
+
+    public void setSprintNumber(int sprintNumber) {
+        this.sprintNumber = sprintNumber;
+    }
+
+    public OffsetDateTime getSprintEndDate() {
+        return sprintEndDate;
+    }
+
+    public void setSprintEndDate(OffsetDateTime sprintEndDate) {
+        this.sprintEndDate = sprintEndDate;
     }
 
     public int getStateID() {

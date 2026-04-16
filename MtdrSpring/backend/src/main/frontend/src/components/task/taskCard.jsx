@@ -36,7 +36,7 @@ const TaskCard = ({ task, onCardClick }) => {
         <div className="card-container-info">
           <div className="card-container-info-text">Delivery Date</div>
           <div className="card-info-pill date-pill">
-            {task.sprintEndDate.toLocaleDateString()}
+            {task.sprintEndDate ? new Date(task.sprintEndDate).toLocaleDateString() : "Sin fecha"}
           </div>
         </div>
       </div>

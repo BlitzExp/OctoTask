@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TaskCard from '../../components/task/taskCard';
 import TaskModal from '../../components/task/TaskModal';
-import { getAllTasks, fetchTeamTasks } from '../../controller/tasksViewController';
+import { getAllTasks, fetchTeamTasksCon } from '../../controller/tasksViewController';
 import './taskDashboard.css';
 
 function TaskDashboard({ user }) {
@@ -36,19 +36,19 @@ function TaskDashboard({ user }) {
 
   useEffect(() => {
     async function fetchTasks() {
-      if (!user || typeof user !== 'object' || user === null) {
-        // No hay usuario válido, no hacer nada
+      if (!user || !user.id) {
         return;
       }
       try {
-        console.log('Fetching tasks for user:', user && user.username);
+        console.log('Fetching tasks for user:', user.username);
         if (user.role === 'admin') {
           console.log('Entre filtro admin');
-          const tasksGet = await fetchTeamTasks(user.teamId);
+          const tasksGet = await fetchTeamTasksCon(user.teamId);
           setTasks(tasksGet);
+          console.log('Tasks set for admin:', tasksGet);
         } else {
-          //const tasksGet = await getAllTasks(req, res);
-          //setTasks(tasksGet);
+          const tasksGet = await getAllTasks(user.id);
+          setTasks(tasksGet);
         }
       } catch (error) {
         console.error('Error fetching tasks:', error);

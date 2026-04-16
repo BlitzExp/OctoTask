@@ -14,17 +14,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-
 @RestController
 @RequestMapping("/api/tasks")
-
-
 public class TaskController {
 
     private final TaskService taskService;
@@ -33,10 +31,21 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @GetMapping("/{teamId}")
+    @GetMapping("/team/{teamId}")
     public ResponseEntity<?> getTeamTasks(@PathVariable int teamId) {
         try {
             var tasks = taskService.getTasksByTeamId(teamId);
+            return ResponseEntity.ok(tasks);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getUserTasks(@PathVariable int userId) {
+        try {
+            var tasks = taskService.getTasksByUserId(userId);
             return ResponseEntity.ok(tasks);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

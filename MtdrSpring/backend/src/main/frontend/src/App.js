@@ -36,8 +36,8 @@ function App() {
 
   function handleUserAfter(userData) {
     // Handle user data after registration
-    setAuthenticated(true);
     setUser(userData);
+    setAuthenticated(true);
     setCurrView("taskDashboard");
     console.log("Registered user data:", userData);
   }
@@ -45,8 +45,6 @@ function App() {
   function handleNavigate(view) {
     setCurrView(view);
   }
-
-  
 
   if (!isAuthenticated) {
     return (

@@ -175,19 +175,19 @@ const TaskModal = ({ task, onClose, onSave }) => {
               <div className='modal-task-info-task-col-general'>
                 <div className='modal-task-info-task-col-general-text'>Deliver Date: </div>
                 <div className="modal-task-info-task-col-general-text-value">
-                  {task.sprintEndDate.toLocaleDateString()}
+                  {task.sprintEndDate ? new Date(task.sprintEndDate).toLocaleDateString() : "Sin fecha"}
                 </div>
               </div>
               <div className='modal-task-info-task-col-general'>
                 <div className='modal-task-info-task-col-general-text'>Created at: </div>
                 <div className="modal-task-info-task-col-general-text-value">
-                  {task.createdAt.toLocaleDateString()}
+                  {task.createdAt ? new Date(task.createdAt).toLocaleDateString() : "Sin fecha"}
                 </div>
               </div>
               <div className='modal-task-info-task-col-general'>
                 <div className='modal-task-info-task-col-general-text'>Updated at: </div>
                 <div className="modal-task-info-task-col-general-text-value">
-                  {task.updatedAt.toLocaleDateString()}
+                  {task.updatedAt ? new Date(task.updatedAt).toLocaleDateString() : "Sin fecha"}
                 </div>
               </div>
             </div>

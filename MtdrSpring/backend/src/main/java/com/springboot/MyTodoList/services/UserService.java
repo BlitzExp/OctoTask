@@ -28,7 +28,7 @@ public class UserService {
         requireNotBlank(user, "username or email");
         requireNotBlank(password, "password");
 
-        String sql = "SELECT a.id, u.name, a.email, u.team_id FROM AUTH a JOIN APP_USER u ON a.id = u.id WHERE (a.email = ? OR u.name = ?) AND a.password = ?";
+        String sql = "SELECT a.id, u.name, a.email, u.team_id, u.role FROM AUTH a JOIN APP_USER u ON a.id = u.id WHERE (a.email = ? OR u.name = ?) AND a.password = ?";
         return jdbcTemplate.query(sql, new Object[]{user, user, password}, rs -> {
             if (rs.next()) {
                 return new User.Builder()
@@ -36,6 +36,7 @@ public class UserService {
                         .setUsername(rs.getString("name"))
                         .setEmail(rs.getString("email"))
                         .setTeamId(rs.getInt("team_id"))
+                        .setRole(rs.getString("role"))
                         .build();
             }
             return null; // No matching user found
@@ -78,6 +79,7 @@ public class UserService {
                     .setUsername(username)
                     .setEmail(email)
                     .setTeamId(teamId != null ? teamId : 0)
+                    .setRole(role)
                     .build();
             return user;
         }

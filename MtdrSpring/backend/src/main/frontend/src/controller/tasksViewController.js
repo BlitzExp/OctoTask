@@ -4,6 +4,7 @@ import Task from '../components/task/Task.js';
 export async function fetchTeamTasks(teamId) {
   try {
     const tasks = await tasksService.fetchTeamTasks(teamId);
+    console.log('Tasks fetched for team:', tasks);
     return tasks.map((taskData) => new Task(taskData));
   } catch (error) {
     console.error('Error fetching team tasks:', error);
@@ -14,14 +15,6 @@ export async function fetchTeamTasks(teamId) {
 
 export const getAllTasks = async (req, res) => {
   try {
-    if (true)
-        {
-            const userId = req.params.userId;
-            const tasks = await tasksService.fetchUserTaskMock(userId);
-            const taskInstances = tasks.map((taskData) => new Task(taskData));
-            res.json(taskInstances);
-            return;
-        }
         
     const userId = req.params.userId;
     const tasks = await tasksService.fetchUserTasks(userId);

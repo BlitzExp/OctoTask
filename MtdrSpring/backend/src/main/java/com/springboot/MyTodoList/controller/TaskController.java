@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-import com.springboot.MyTodoList.model.User;
 
 @RestController
 @RequestMapping("/api/tasks")

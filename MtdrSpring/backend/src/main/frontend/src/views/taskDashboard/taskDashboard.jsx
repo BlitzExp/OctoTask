@@ -26,9 +26,7 @@ function TaskDashboard({ user }) {
   };
 
   const handleSaveTask = (updatedTask) => {
-    // Here you would call your controller to update the task
     console.log('Saving task:', updatedTask);
-    // Then update the state
     const updatedTasks = tasks.map(task =>
       task.id === updatedTask.id ? updatedTask : task
     );

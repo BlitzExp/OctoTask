@@ -1,6 +1,16 @@
 import * as tasksService from '../services/TasksService.js';
 import Task from '../components/task/Task.js';
 
+export async function fetchTeamTasks(teamId) {
+  try {
+    const tasks = await tasksService.fetchTeamTasks(teamId);
+    return tasks.map((taskData) => new Task(taskData));
+  } catch (error) {
+    console.error('Error fetching team tasks:', error);
+    throw error;
+  }
+};
+
 
 export const getAllTasks = async (req, res) => {
   try {

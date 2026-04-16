@@ -1,14 +1,26 @@
 import React, { useState } from 'react';
 import './LoginView.css';
+import { handleLogin } from '../../controller/logInController';
+
 import logo from '../../assets/logo.png';
 
 function LoginView({ onLogin, onGoToRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    onLogin(username, password);
+    try {
+      const userData = await handleLogin(username, password);
+      if (userData) {
+        onLogin(userData);
+      } else {
+        alert('Login failed. Please check your credentials and try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('An error occurred during login. Please try again later.');
+    }
   }
 
   return (

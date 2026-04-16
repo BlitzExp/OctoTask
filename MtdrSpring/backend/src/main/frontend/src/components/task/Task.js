@@ -5,12 +5,12 @@ export default class Task {
     userName,
     name,
     description,
+    sprintId,
     sprintNumber,
     sprintEndDate,
     stateId,
     priorityId,
     linkToFile,
-    visible = 1,
     createdAt,
     updatedAt,
     cost,
@@ -22,21 +22,17 @@ export default class Task {
     this.userName = userName;
     this.name = name;
     this.description = description;
+    this.sprintId = sprintId;
     this.sprintNumber = sprintNumber;
     this.sprintEndDate = sprintEndDate;
     this.stateId = stateId;
     this.priorityId = priorityId;
     this.linkToFile = linkToFile;
-    this.visible = visible;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
     this.cost = cost;
     this.spentHours = spentHours;
     this.visibility = visibility;
-  }
-
-  isVisible() {
-    return this.visible === 1;
   }
 
   getPriorityLabel() {

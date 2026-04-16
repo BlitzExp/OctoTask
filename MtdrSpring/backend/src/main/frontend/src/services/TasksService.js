@@ -8,12 +8,12 @@ var mockTasks = [
     name: 'Task 1',
     userName: 'John Doe',
     description: 'Description for Task 1',
+    sprintId: 1,
     sprintNumber: 1,
     sprintEndDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
     stateId: 2,
     priorityId: 1,
     linkToFile: null,
-    visible: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     cost: 100,
@@ -26,12 +26,12 @@ var mockTasks = [
     name: 'Task 2',
     userName: 'John Doe',
     description: 'Description for Task 2',
+    sprintId: 1,
     sprintNumber: 1,
     sprintEndDate: new Date(),
     stateId: 3,
     priorityId: 2,
     linkToFile: null,
-    visible: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     cost: 200,
@@ -44,12 +44,12 @@ var mockTasks = [
     name: 'Task 3',
     userName: 'John Doe',
     description: 'Description for Task 3',
+    sprintId: 1,
     sprintNumber: 1,
     sprintEndDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
     stateId: 4,
     priorityId: 3,
     linkToFile: null,
-    visible: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     cost: 300,
@@ -61,12 +61,12 @@ var mockTasks = [
     userId: 1,
     name: 'Task 4',
     description: 'Description for Task 4',
+    sprintId: 1,
     sprintNumber: 1,
     sprintEndDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
     stateId: 1,
     priorityId: 1,
     linkToFile: null,
-    visible: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     cost: 400,
@@ -75,8 +75,18 @@ var mockTasks = [
     })
 ];
 
+export function fetchTeamTasks(teamId) {
+  return fetch(API_LIST + `/api/tasks/${teamId}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Something went wrong ...');
+      }
+      return response.json();
+    });
+}
+
 export function fetchUserTasks(userId) {
-  return fetch(API_LIST + `/users/${userId}/tasks`)
+  return fetch(API_LIST + `/api/tasks/${userId}`)
     .then((response) => {
       if (!response.ok) {
         throw new Error('Something went wrong ...');

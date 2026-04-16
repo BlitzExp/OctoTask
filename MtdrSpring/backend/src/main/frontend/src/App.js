@@ -34,15 +34,12 @@ function App() {
   const [currView, setCurrView] = useState("login");
   const [user, setUser] = useState(null);
 
-  function handleLogin(username, password) {
-    if (username.trim() && password.trim()) {
-      const userObject = { userId: 1, teamId: 1 }; // Mock user
-      setUser(userObject);
-      setAuthenticated(true);
-      setCurrView("taskDashboard");
-      return true;
-    }
-    return false;
+  function handleUserAfter(userData) {
+    // Handle user data after registration
+    setAuthenticated(true);
+    setCurrView("taskDashboard");
+    setUser(userData);
+    console.log("Registered user data:", userData);
   }
 
   function handleNavigate(view) {
@@ -58,12 +55,12 @@ function App() {
         <Background isAuthenticated={isAuthenticated}>
           {currView === "register" ? (
             <RegisterView
-              onRegister={handleLogin}
+              onRegister={handleUserAfter}
               onBackToLogin={() => handleNavigate("login")}
             />
           ) : (
             <LoginView
-              onLogin={handleLogin}
+              onLogin={handleUserAfter}
               onGoToRegister={() => handleNavigate("register")}
             />
           )}

@@ -76,7 +76,7 @@ var mockTasks = [
 ];
 
 export function fetchTeamTasks(teamId) {
-  return fetch(API_LIST + `/api/tasks/${teamId}`)
+  return fetch(API_LIST + `/tasks/${teamId}`)
     .then((response) => {
       if (!response.ok) {
         throw new Error('Something went wrong ...');
@@ -86,7 +86,7 @@ export function fetchTeamTasks(teamId) {
 }
 
 export function fetchUserTasks(userId) {
-  return fetch(API_LIST + `/api/tasks/${userId}`)
+  return fetch(API_LIST + `/tasks/${userId}`)
     .then((response) => {
       if (!response.ok) {
         throw new Error('Something went wrong ...');

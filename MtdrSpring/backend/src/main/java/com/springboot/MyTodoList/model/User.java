@@ -1,16 +1,32 @@
 package com.springboot.MyTodoList.model;
 
 public class User {
-    int id;
-    String username;
-    String email;
-    int teamId;
+    private final int id;
+    private final String username;
+    private final String email;
+    private final int teamId;
 
     public User(Builder builder) {
         this.id = builder.id;
         this.username = builder.username;
         this.email = builder.email;
         this.teamId = builder.teamId;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public int getTeamId() {
+        return teamId;
     }
 
     public static class Builder {

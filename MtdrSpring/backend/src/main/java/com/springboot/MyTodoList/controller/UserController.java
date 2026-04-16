@@ -8,9 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Map;
 
 import com.springboot.MyTodoList.model.User;
@@ -30,13 +27,17 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> checkDuplicates(@RequestBody Map<String, Object> userData) {
         try {
             boolean duplicates = userService.checkDuplicates(userData);
-            if (!duplicates) {
+            if (duplicates) {
                 return ResponseEntity.ok(Map.of("status", "ok", "message", "User does not exist"));
             } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of("status", "error", "message", "User already exists"));
                         
             }
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", "error",
+                    "message", ex.getMessage()));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "status", "error",
@@ -54,6 +55,10 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(Map.of("status", "error", "message", "User not created"));
             }
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", "error",
+                    "message", ex.getMessage()));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "status", "error",
@@ -68,9 +73,13 @@ public class UserController {
             if (user != null) {
                 return ResponseEntity.ok(user);
             } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("status", "error", "message", "Invalid credentials"));
             }
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", "error",
+                    "message", ex.getMessage()));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "status", "error",

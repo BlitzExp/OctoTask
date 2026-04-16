@@ -1,13 +1,15 @@
 package com.springboot.MyTodoList.services;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
+import java.sql.PreparedStatement;
 import java.util.Map;
 import com.springboot.MyTodoList.model.User;
-
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 
 @Service
 public class UserService {
@@ -18,15 +20,20 @@ public class UserService {
     }
 
     public User loginUser(Map<String, Object> userData) {
-        String user = (String) userData.get("email");
+        String user = stringValue(userData, "email");
+        if (isBlank(user)) {
+            user = stringValue(userData, "username");
+        }
         String password = (String) userData.get("password");
+        requireNotBlank(user, "username or email");
+        requireNotBlank(password, "password");
 
-        String sql = "SELECT a.id, u.username, a.email, u.team_id FROM AUTH a JOIN APP_USERS u ON a.id = u.auth_id WHERE (a.email = ? OR u.username = ?) AND a.password = ?";
+        String sql = "SELECT a.id, u.name, a.email, u.team_id FROM AUTH a JOIN APP_USER u ON a.id = u.id WHERE (a.email = ? OR u.name = ?) AND a.password = ?";
         return jdbcTemplate.query(sql, new Object[]{user, user, password}, rs -> {
             if (rs.next()) {
                 return new User.Builder()
                         .setId(rs.getInt("id"))
-                        .setUsername(rs.getString("username"))
+                        .setUsername(rs.getString("name"))
                         .setEmail(rs.getString("email"))
                         .setTeamId(rs.getInt("team_id"))
                         .build();
@@ -35,19 +42,23 @@ public class UserService {
         });
     }
 
+    @Transactional
     public User createUser(Map<String, Object> userData) {
-        String username = (String) userData.get("username");
-        String email = (String) userData.get("email");
-        String password = (String) userData.get("password");
-        String role = (String) userData.get("role");
-
-        String authSql = "INSERT INTO AUTH (email, password) VALUES (?, ?) RETURNING id";
-        Integer authId = jdbcTemplate.queryForObject(authSql, Integer.class, email, password);
-        if (authId == null) {
-            return null; // Failed to create auth record
+        String username = stringValue(userData, "username");
+        String email = stringValue(userData, "email");
+        String password = stringValue(userData, "password");
+        String role = stringValue(userData, "role");
+        if (isBlank(role)) {
+            role = "user";
         }
 
-        String sql = "INSERT INTO APP_USERS (auth_id, username, role, team_id) VALUES (?, ?, ?, ?)";
+        requireNotBlank(username, "username");
+        requireNotBlank(email, "email");
+        requireNotBlank(password, "password");
+
+        Integer authId = insertAndReturnId("INSERT INTO AUTH (email, password) VALUES (?, ?)", email, password);
+
+        String sql = "INSERT INTO APP_USER (id, name, role, team_id) VALUES (?, ?, ?, ?)";
 
         int rows = jdbcTemplate.update(sql, authId, username, role, null);
         
@@ -55,10 +66,9 @@ public class UserService {
             Integer teamId = null;
 
             if (role.equalsIgnoreCase("admin")) {
-                String teamSql = "INSERT INTO TEAMS (manager_id) VALUES (?) RETURNING id";
-                teamId = jdbcTemplate.queryForObject(teamSql, Integer.class, authId);
+                teamId = insertAndReturnId("INSERT INTO TEAMS (manager_id) VALUES (?)", authId);
                 if (teamId != null) {
-                    String updateTeamSql = "UPDATE APP_USERS SET team_id = ? WHERE auth_id = ?";
+                    String updateTeamSql = "UPDATE APP_USER SET team_id = ? WHERE id = ?";
                     jdbcTemplate.update(updateTeamSql, teamId, authId);
                 }
             }
@@ -82,10 +92,13 @@ public class UserService {
     }
 
     public boolean checkDuplicates(Map<String, Object> userData) {
-        String username = (String) userData.get("username");
-        String email = (String) userData.get("email");
+        String username = stringValue(userData, "username");
+        String email = stringValue(userData, "email");
 
-        String sql = "SELECT COUNT(*) FROM APP_USERS WHERE username = ?";
+        requireNotBlank(username, "username");
+        requireNotBlank(email, "email");
+
+        String sql = "SELECT COUNT(*) FROM APP_USER WHERE name = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, username);
         if (count != null && count > 0) {
             return false; // Username already exists
@@ -100,5 +113,36 @@ public class UserService {
         }
 
         return true; // Both username and email are available
+    }
+
+    private Integer insertAndReturnId(String sql, Object... params) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        int rows = jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"ID"});
+            for (int i = 0; i < params.length; i++) {
+                ps.setObject(i + 1, params[i]);
+            }
+            return ps;
+        }, keyHolder);
+
+        if (rows == 0 || keyHolder.getKey() == null) {
+            return null;
+        }
+        return keyHolder.getKey().intValue();
+    }
+
+    private String stringValue(Map<String, Object> data, String key) {
+        Object value = data.get(key);
+        return value == null ? null : value.toString().trim();
+    }
+
+    private void requireNotBlank(String value, String fieldName) {
+        if (isBlank(value)) {
+            throw new IllegalArgumentException(fieldName + " is required");
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

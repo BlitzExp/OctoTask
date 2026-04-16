@@ -14,7 +14,7 @@ public class TaskService {
     }
 
     public Object getTasksByTeamId(int teamId) {
-        String sql = "Select t.id as id, t.user_id as userId, t.name as userName, t.DESCRIPTION as description, s.ID as sprintId, s.SPRINT_NUM as sprintNumber, s.END_DATE as sprintEndDate, t.STATE_ID as stateId,  t.PRIORITY_ID as priorityId,  t.LINK_TO_FILE as linkToFile, t.CREATED_AT as createdAt, t.cost as cost, t.SPENT_HOURS as spentHours, t.visibility as visibility from TASKS t join sprint s on t.SPRINT_ID = s.ID join APP_USER u on u.ID = t.USER_ID where u.TEAM_ID = ? and t.visibility = '1'";
+        String sql = "SELECT t.id AS id, t.user_id AS userId, t.name AS name, u.name AS userName, t.description AS description, s.id AS sprintId, s.sprint_num AS sprintNumber, s.end_date AS sprintEndDate, t.state_id AS stateId, t.priority_id AS priorityId, t.link_to_file AS linkToFile, t.created_at AS createdAt, t.cost AS cost, t.spent_hours AS spentHours, t.visibility AS visibility FROM TASKS t JOIN SPRINT s ON t.sprint_id = s.id JOIN APP_USER u ON u.id = t.user_id WHERE u.team_id = ? AND t.visibility = '1'";
         return jdbcTemplate.queryForList(sql, teamId);
     }
 }

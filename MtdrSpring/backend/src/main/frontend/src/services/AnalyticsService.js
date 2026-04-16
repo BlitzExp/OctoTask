@@ -71,3 +71,21 @@ export function getNumLateTasksAll(teamId) {
         return response.json();
     });
 }
+
+export function fetchMemberStatusBreak(teamId, sprintId) {
+    return fetch(`${API_LIST}/analytics/memberstatus/${teamId}/${sprintId}`).then((response) => {
+        if (!response.ok) {
+            throw new Error('Error fetching member status breakdown');
+        }
+        return response.json();
+    });
+}
+
+export function fetchWorkHoursSprint(teamId, sprintId) {
+    return fetch(`${API_LIST}/analytics/workhours/${teamId}/${sprintId}`).then((response) => {
+        if (!response.ok) {
+            throw new Error('Error fetching work hours');
+        }
+        return response.json();
+    });
+}

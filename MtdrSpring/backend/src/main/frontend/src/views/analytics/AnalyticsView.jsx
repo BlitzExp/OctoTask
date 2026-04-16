@@ -9,32 +9,36 @@ import { LabelList } from 'recharts';
 import { useEffect } from 'react';
 
 import { getAllSprintsController } from '../../controller/filterController';
-import { fetchNumTasksSprintController, fetchNumTasksAllController } from '../../controller/analyticsController';
+import { fetchNumTasksSprintController, fetchNumTasksAllController 
+  , fetchNumCompletedTasksSprintController, fetchNumCompletedTasksAllController,
+  fetchNumPendingTasksSprintController, fetchNumPendingTasksAllController,
+  fetchNumLateTasksAllController, fetchNumLateTasksSprintController,
+  fetchMembersStatus, fetchWorkHours
+} from '../../controller/analyticsController';
 
 
 function AnalyticsView({ user }) {
   const [sprints, setSprints] = useState([]);
   const [selectedSprint, setSelectedSprint] = useState(null);
 
-  const [analyticsData, setAnalyticsData] = useState(null);
+
+  const [numLateTasks, setNumLateTasks] = useState(0);
+  const [numPendingTasks, setNumPendingTasks] = useState(0);
+  const [numCompletedTasks, setNumCompletedTasks] = useState(0);
+  const [numTotalTasks, setNumTotalTasks] = useState(0);
+  const [membersStatus, setMembersStatus] = useState([]);
+  const [workHours, setWorkHours] = useState([]);
 
   useEffect(() => {
     async function fetchSprints() {
       try {
         const sprintsData = await getAllSprintsController(user.teamId);
-        setSprints(sprintsData);
-        // agrega un valor que sea all Sprints con id allsprints
-        setSprints((prevSprints) => [
-          ...prevSprints,
-          { id: 'allsprints', name: 'All Sprints' }
-        ]);
+        const sprintsWithAll = [...sprintsData, { id: 'allsprints', name: 'All Sprints' }];
+        setSprints(sprintsWithAll);
 
-        if (sprintsData.length > 0) {
-          setSelectedSprint(sprintsData[0].id);
-        }
-
-
-        fetchDataForSprint(sprintsData.length > 0 ? sprintsData[0].id : 'allsprints');
+        const initialSprintId = sprintsData.length > 0 ? sprintsData[0].id : 'allsprints';
+        setSelectedSprint(initialSprintId);
+        fetchDataForSprint(initialSprintId);
       } catch (error) {
         console.error('Error fetching sprints:', error);
       }
@@ -48,13 +52,27 @@ function AnalyticsView({ user }) {
       if (sprintId === 'allsprints') {
         // Lógica para obtener datos de todos los sprints
         const totalTasks = await fetchNumTasksAllController(user.teamId);
-        setAnalyticsData(totalTasks);
-        console.log('Fetching data for all sprints', totalTasks);
-        
+        const completedTasks = await fetchNumCompletedTasksAllController(user.teamId);
+        const pendingTasks = await fetchNumPendingTasksAllController(user.teamId);
+        const lateTasks = await fetchNumLateTasksAllController(user.teamId);
+        setNumTotalTasks(totalTasks);
+        setNumCompletedTasks(completedTasks);
+        setNumPendingTasks(pendingTasks);
+        setNumLateTasks(lateTasks);
+        setMembersStatus([]);
       } else {
-        const data = await fetchNumTasksSprintController(user.teamId, sprintId);
-        setAnalyticsData(data);
-        console.log('Fetching data for sprint', sprintId, data);
+        const totalTasks = await fetchNumTasksSprintController(user.teamId, sprintId);
+        const completedTasks = await fetchNumCompletedTasksSprintController(user.teamId, sprintId);
+        const pendingTasks = await fetchNumPendingTasksSprintController(user.teamId, sprintId);
+        const lateTasks = await fetchNumLateTasksSprintController(user.teamId, sprintId);
+        const membersStatus = await fetchMembersStatus(user.teamId, sprintId);
+        const workHours = await fetchWorkHours(user.teamId, sprintId);
+        setNumTotalTasks(totalTasks);
+        setNumCompletedTasks(completedTasks);
+        setNumPendingTasks(pendingTasks);
+        setNumLateTasks(lateTasks);
+        setMembersStatus(membersStatus);
+        setWorkHours(workHours);
       }
     } catch (error) {
       console.error('Error fetching data for sprint:', error);
@@ -142,15 +160,15 @@ function AnalyticsView({ user }) {
               </div>
               <div className="analytics-kpi-content">
                 <span className='analytics-kpi-label'>Missing & On Going Tasks</span>
-                <span className="analytics-kpi-value">{getMissingAndOngoingTasks()}</span>
+                <span className="analytics-kpi-value">{numPendingTasks}</span>
               </div>
             </div>
             <div className="analytics-kpi-card kpi-horizontal">
               <div className="analytics-kpi-progress-circle">
                 {/* Tamaño dinámico para el círculo de progreso */}
-                {mockData.totalTasks > 0 && (
+                {numTotalTasks > 0 && (
                   <RadialBarChart width={96} height={96} cx={48} cy={48} innerRadius={36} outerRadius={44} barSize={14}
-                    data={[{ name: 'Completed', value: Math.round((mockData.completedTasks/mockData.totalTasks)*100), fill: '#fff' }]}
+                    data={[{ name: 'Completed', value: numTotalTasks > 0 ? Math.round((numCompletedTasks / numTotalTasks) * 100) : 0, fill: '#fff' }]}
                     style={{ background: 'transparent', maxWidth: '100%', height: 'auto' }}>
                     <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
                     <RadialBar 
@@ -163,11 +181,11 @@ function AnalyticsView({ user }) {
                     />
                   </RadialBarChart>
                 )}
-                <div className="analytics-kpi-progress-text">{mockData.totalTasks > 0 ? Math.round((mockData.completedTasks/mockData.totalTasks)*100) : 0}%</div>
+                <div className="analytics-kpi-progress-text">{numTotalTasks > 0 ? Math.round((numCompletedTasks/numTotalTasks)*100) : 0}%</div>
               </div>
               <div className="analytics-kpi-content">
                 <span className='analytics-kpi-label'>Completed Tasks</span>
-                <span className="analytics-kpi-value">{mockData.completedTasks}</span>
+                <span className="analytics-kpi-value">{numCompletedTasks}</span>
               </div>
             </div>
             <div className="analytics-kpi-card kpi-horizontal">
@@ -176,7 +194,7 @@ function AnalyticsView({ user }) {
               </div>
               <div className="analytics-kpi-content">
                 <span className='analytics-kpi-label'>Late Tasks</span>
-                <span className="analytics-kpi-value">{mockData.lateTasks}</span>
+                <span className="analytics-kpi-value">{numLateTasks}</span>
               </div>
             </div>
         </div>
@@ -185,10 +203,11 @@ function AnalyticsView({ user }) {
             <h2 className="analytics-chart-title">Tasks per User</h2>
             <ResponsiveContainer width="100%" height="100%" minHeight={120}>
               <BarChart
-                data={mockData.tasksPerUser.map(user => ({
-                  ...user,
-                  pendingTasks: user.tasks - user.completedTasks,
-                  lateTasks: user.lateTasks !== undefined ? user.lateTasks : (mockData.lateTasks > 0 ? Math.floor(mockData.lateTasks / mockData.tasksPerUser.length) : 0)
+                data={membersStatus.map((user) => ({
+                  member: user.user_name,
+                  completedTasks: user.completed_tasks,
+                  pendingTasks: user.pending_tasks,
+                  lateTasks: user.late_tasks,
                 }))}
                 margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                 barCategoryGap={10}
@@ -215,7 +234,10 @@ function AnalyticsView({ user }) {
             <h2 className="analytics-chart-title">Hours per Member</h2>
             <ResponsiveContainer width="100%" height="90%">
               <BarChart 
-                data={mockData.timePerMember}
+                data={workHours.map((user) => ({
+                  member: user.user_name,
+                  totalTime: user.total_work_hours,
+                }))}
                 margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#444" />

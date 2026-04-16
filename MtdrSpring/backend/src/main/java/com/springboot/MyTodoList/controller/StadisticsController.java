@@ -50,9 +50,115 @@ public class StadisticsController {
     @GetMapping("/numtasks/all/{teamId}")
     public ResponseEntity<Map<String, Object>> getNumTasksAll(
             @PathVariable String teamId) {
-        try{
+        try {
             Integer numTasks = stadisticsService.getNumTasksByTeamId(Integer.parseInt(teamId));
             return ResponseEntity.ok(Map.of("num_tasks", numTasks));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/completedtasks/{teamId}/{sprintId}")
+    public ResponseEntity<Map<String, Object>> getNumCompletedTasks(
+            @PathVariable String teamId,
+            @PathVariable String sprintId) {
+        try {
+            Integer numCompletedTasks = stadisticsService.getNumCompletedTasksBySprintId(Integer.parseInt(teamId),
+                    Integer.parseInt(sprintId));
+            return ResponseEntity.ok(Map.of("num_completed_tasks", numCompletedTasks));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/completedtasks/all/{teamId}")
+    public ResponseEntity<Map<String, Object>> getNumCompletedTasksAll(
+            @PathVariable String teamId) {
+        try {
+            Integer numCompletedTasks = stadisticsService.getNumCompletedTasksByTeamId(Integer.parseInt(teamId));
+            return ResponseEntity.ok(Map.of("num_completed_tasks", numCompletedTasks));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/pendingtasks/{teamId}/{sprintId}")
+    public ResponseEntity<Map<String, Object>> getNumPendingTasks(
+            @PathVariable String teamId,
+            @PathVariable String sprintId) {
+        try {
+            Integer numPendingTasks = stadisticsService.getNumPendingTasksBySprintId(Integer.parseInt(teamId),
+                    Integer.parseInt(sprintId));
+            return ResponseEntity.ok(Map.of("num_pending_tasks", numPendingTasks));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/pendingtasks/all/{teamId}")
+    public ResponseEntity<Map<String, Object>> getNumPendingTasksAll(
+            @PathVariable String teamId) {
+        try {
+            Integer numPendingTasks = stadisticsService.getNumPendingTasksByTeamId(Integer.parseInt(teamId));
+            return ResponseEntity.ok(Map.of("num_pending_tasks", numPendingTasks));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/latetasks/{teamId}/{sprintId}")
+    public ResponseEntity<Map<String, Object>> getLateTasks(
+            @PathVariable String teamId,
+            @PathVariable String sprintId) {
+        try {
+            Integer numLateTasks = stadisticsService.getLateTasksBySprintId(Integer.parseInt(teamId),
+                    Integer.parseInt(sprintId));
+            return ResponseEntity.ok(Map.of("num_late_tasks", numLateTasks));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/latetasks/all/{teamId}")
+    public ResponseEntity<Map<String, Object>> getLateTasksAll(
+            @PathVariable String teamId) {
+        try {
+            Integer numLateTasks = stadisticsService.getLateTasksByTeamId(Integer.parseInt(teamId));
+            return ResponseEntity.ok(Map.of("num_late_tasks", numLateTasks));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/memberstatus/{teamId}/{sprintId}")
+    public ResponseEntity<Map<String, Object>> getMemberStatusBreak(
+            @PathVariable String teamId,
+            @PathVariable String sprintId) {
+        try {
+            var breakdown = stadisticsService.getMemberStatusBreakdown(Integer.parseInt(teamId),
+                    Integer.parseInt(sprintId));
+            return ResponseEntity.ok(Map.of("member_status_breakdown", breakdown));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/workhours/{teamId}/{sprintId}")
+    public ResponseEntity<Map<String, Object>> getWorkHours(
+            @PathVariable String teamId,
+            @PathVariable String sprintId) {
+        try {
+            var workHours = stadisticsService.getMemberWorkHoursBySprint(Integer.parseInt(teamId),
+                    Integer.parseInt(sprintId));
+            return ResponseEntity.ok(Map.of("work_hours", workHours));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("status", "error", "message", ex.getMessage()));

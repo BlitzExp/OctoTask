@@ -6,9 +6,12 @@ import org.springframework.stereotype.Service;
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
+<<<<<<< HEAD
 
 import com.springboot.MyTodoList.mappers.TaskRowMapper;
 import com.springboot.MyTodoList.model.Task;
+=======
+>>>>>>> bbc4983 (Finished backend endpoints Statistics)
 
 @Service
 public class StadisticsService {
@@ -19,7 +22,14 @@ public class StadisticsService {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
+<<<<<<< HEAD
     // Number of tasks by sprint and team
+=======
+    // ==========================================
+    // 1. General Tasks
+    // ==========================================
+
+>>>>>>> bbc4983 (Finished backend endpoints Statistics)
     public Integer getNumTasksBySprintId(int teamId, int sprintId) {
         String sql = "SELECT COUNT(*) FROM TASKS t JOIN APP_USER u ON u.id = t.user_id JOIN SPRINT s ON s.id = t.sprint_id WHERE u.team_id = ? AND t.sprint_id = ? AND t.visible = 1";
         return jdbcTemplate.queryForObject(sql, Integer.class, teamId, sprintId);
@@ -30,6 +40,7 @@ public class StadisticsService {
         return jdbcTemplate.queryForObject(sql, Integer.class, teamId);
     }
 
+<<<<<<< HEAD
     // Number of completed tasks by sprint and team
     public Integer getNumCompletedTasksBySprintId(int teamId, int sprintId) {
         String sql = "SELECT COUNT(*) FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE s.team_id = ? and t.sprint_id = ? AND ts.name = 'DONE' AND t.visible = 1";
@@ -224,3 +235,75 @@ public class StadisticsService {
     }
 
 }
+=======
+    // ==========================================
+    // 2. Late Tasks
+    // ==========================================
+
+    public List<Map<String, Object>> getLateTasksBySprintId(int teamId, int sprintId) {
+        String sql = "SELECT t.* FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE s.team_id = ? AND t.sprint_id = ? AND ts.name = 'LATE'";
+        return jdbcTemplate.queryForList(sql, teamId, sprintId);
+    }
+
+    public List<Map<String, Object>> getLateTasksByTeamId(int teamId) {
+        String sql = "SELECT t.* FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN APP_USER u ON u.id = t.user_id WHERE u.team_id = ? AND ts.name = 'LATE'";
+        return jdbcTemplate.queryForList(sql, teamId);
+    }
+
+    // ==========================================
+    // 3. Pending Tasks
+    // ==========================================
+
+    public List<Map<String, Object>> getPendingTasksBySprintId(int teamId, int sprintId) {
+        String sql = "SELECT t.* FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE s.team_id = ? AND t.sprint_id = ? AND ts.name = 'PENDING'";
+        return jdbcTemplate.queryForList(sql, teamId, sprintId);
+    }
+
+    public List<Map<String, Object>> getPendingTasksByTeamId(int teamId) {
+        String sql = "SELECT t.* FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN APP_USER u ON u.id = t.user_id WHERE u.team_id = ? AND ts.name = 'PENDING'";
+        return jdbcTemplate.queryForList(sql, teamId);
+    }
+
+    // ==========================================
+    // 4. Ongoing Tasks
+    // ==========================================
+
+    public List<Map<String, Object>> getOngoingTasksBySprintId(int teamId, int sprintId) {
+        String sql = "SELECT t.* FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE s.team_id = ? AND t.sprint_id = ? AND ts.name = 'ON GOING'";
+        return jdbcTemplate.queryForList(sql, teamId, sprintId);
+    }
+
+    public List<Map<String, Object>> getOngoingTasksByTeamId(int teamId) {
+        String sql = "SELECT t.* FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN APP_USER u ON u.id = t.user_id WHERE u.team_id = ? AND ts.name = 'ON GOING'";
+        return jdbcTemplate.queryForList(sql, teamId);
+    }
+
+    // ==========================================
+    // 5. Team Member Stats & Hours
+    // ==========================================
+
+    public List<Map<String, Object>> getMemberStatusBreakdown(int teamId, int sprintId) {
+        String sql = "SELECT u.id AS user_id, u.name AS user_name, SUM(CASE WHEN ts.name = 'DONE' THEN 1 ELSE 0 END) AS completed_tasks, SUM(CASE WHEN ts.name = 'LATE' THEN 1 ELSE 0 END) AS late_tasks, SUM(CASE WHEN ts.name IN ('PENDING', 'ON GOING') THEN 1 ELSE 0 END) AS pending_tasks FROM APP_USER u LEFT JOIN TASKS t ON t.user_id = u.id LEFT JOIN TASK_STATE ts ON ts.id = t.state_id WHERE u.team_id = ? AND t.sprint_id = ? GROUP BY u.id, u.name";
+        return jdbcTemplate.queryForList(sql, teamId, sprintId);
+    }
+
+    public List<Map<String, Object>> getMemberHourLoad(int teamId, int sprintId) {
+        String sql = "SELECT u.id AS user_id, u.name AS user_name, SUM(t.spent_hours) AS total_hours FROM APP_USER u JOIN TASKS t ON t.user_id = u.id WHERE u.team_id = ? AND t.sprint_id = ? GROUP BY u.id, u.name";
+        return jdbcTemplate.queryForList(sql, teamId, sprintId);
+    }
+
+    // ==========================================
+    // 6. Metrics & Averages
+    // ==========================================
+
+    public List<Map<String, Object>> getSprintAverages(int teamId, int sprintId) {
+        String sql = "SELECT AVG(CASE WHEN ts.name = 'DONE' THEN 1 ELSE 0 END) AS avg_completed, AVG(CASE WHEN ts.name = 'LATE' THEN 1 ELSE 0 END) AS avg_late, AVG(CASE WHEN ts.name = 'PENDING' THEN 1 ELSE 0 END) AS avg_pending, AVG(CASE WHEN ts.name = 'ON GOING' THEN 1 ELSE 0 END) AS avg_ongoing FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE s.team_id = ? AND t.sprint_id = ?";
+        return jdbcTemplate.queryForList(sql, teamId, sprintId); 
+    }
+
+    public List<Map<String, Object>> getHistoricalAverages(int teamId) {
+        String sql = "SELECT AVG(CASE WHEN ts.name = 'DONE' THEN 1 ELSE 0 END) AS avg_completed, AVG(CASE WHEN ts.name = 'LATE' THEN 1 ELSE 0 END) AS avg_late, AVG(CASE WHEN ts.name = 'PENDING' THEN 1 ELSE 0 END) AS avg_pending, AVG(CASE WHEN ts.name = 'ON GOING' THEN 1 ELSE 0 END) AS avg_ongoing FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE s.team_id = ?";
+        return jdbcTemplate.queryForList(sql, teamId);
+    }
+}
+>>>>>>> bbc4983 (Finished backend endpoints Statistics)

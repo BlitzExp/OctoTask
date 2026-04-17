@@ -8,7 +8,9 @@ import {
   getNumLateTasksSprint,
   getNumLateTasksAll,
   fetchMemberStatusBreak,
-  fetchWorkHoursSprint
+  fetchWorkHoursSprint,
+  fetchAVGTasksPerMember,
+  fetchAVGHoursPerMember,
 } from "../services/AnalyticsService";
 
 export async function fetchNumTasksSprintController(teamId, sprintId) {
@@ -95,21 +97,55 @@ export async function fetchNumLateTasksAllController(teamId) {
 }
 
 export async function fetchMembersStatus(teamId, sprintId) {
-    try {
-        const data = await fetchMemberStatusBreak(teamId, sprintId);
-        return data.member_status_breakdown;
-    } catch (error) {
-        console.error("Error fetching member status breakdown:", error);
-        throw error;
-    }
+  try {
+    const data = await fetchMemberStatusBreak(teamId, sprintId);
+    return data.member_status_breakdown;
+  } catch (error) {
+    console.error("Error fetching member status breakdown:", error);
+    throw error;
+  }
 }
 
 export async function fetchWorkHours(teamId, sprintId) {
-    try {
-        const data = await fetchWorkHoursSprint(teamId, sprintId);
-        return data.work_hours;
-    } catch (error) {
-        console.error("Error fetching work hours for sprint:", error);
-        throw error;
-    }
+  try {
+    const data = await fetchWorkHoursSprint(teamId, sprintId);
+    return data.work_hours;
+  } catch (error) {
+    console.error("Error fetching work hours for sprint:", error);
+    throw error;
+  }
+}
+
+export async function fetchAVGTasksPerMemberController(teamId) {
+  try {
+    const data = await fetchAVGTasksPerMember(teamId);
+    return data.avg_tasks_per_member;
+  } catch (error) {
+    console.error("Error fetching average tasks per member:", error);
+    throw error;
+  }
+}
+
+export async function fetchAVGHours(teamId) {
+  try {
+    const data = await fetchAVGHoursPerMember(teamId);
+    return data.avg_hours_per_member;
+  } catch (error) {
+    console.error("Error fetching average hours per member:", error);
+    throw error;
+  }
+}
+
+export function calculateKPIAVG(avgTasksPerMember, avgHoursPerMember) {
+    const kpiGrades = {
+        tasks: 'N/A',
+        hours: 'N/A',
+    };
+}
+
+export function calculateKPI(TasksPerMember, HoursPerMember) {
+  const kpiGrades = {
+    tasks: 'N/A',
+    hours: 'N/A',
+  };
 }

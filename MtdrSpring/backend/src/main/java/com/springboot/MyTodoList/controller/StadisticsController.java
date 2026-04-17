@@ -165,4 +165,28 @@ public class StadisticsController {
         }
     }
 
+    @GetMapping("/avgtasks/{teamId}")
+    public ResponseEntity<Map<String, Object>> getAverageTasksPerStatusPerTeam(
+            @PathVariable String teamId) {
+        try {
+            var avgTasks = stadisticsService.getAverageTasksPerStatus(Integer.parseInt(teamId));
+            return ResponseEntity.ok(Map.of("avg_tasks_per_member", avgTasks));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/avghours/{teamId}")
+    public ResponseEntity<Map<String, Object>> getAverageHoursPerMember(
+            @PathVariable String teamId) {
+        try {
+            var avgHours = stadisticsService.getAverageWorkHoursPerSprint(Integer.parseInt(teamId));
+            return ResponseEntity.ok(Map.of("avg_hours_per_member", avgHours));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
 }

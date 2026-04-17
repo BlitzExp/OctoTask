@@ -13,7 +13,8 @@ import { fetchNumTasksSprintController, fetchNumTasksAllController
   , fetchNumCompletedTasksSprintController, fetchNumCompletedTasksAllController,
   fetchNumPendingTasksSprintController, fetchNumPendingTasksAllController,
   fetchNumLateTasksAllController, fetchNumLateTasksSprintController,
-  fetchMembersStatus, fetchWorkHours
+  fetchMembersStatus, fetchWorkHours, fetchAVGTasksPerMemberController,
+  fetchAVGHours, calculateKPI, calculateKPIAVG
 } from '../../controller/analyticsController';
 
 
@@ -26,8 +27,14 @@ function AnalyticsView({ user }) {
   const [numPendingTasks, setNumPendingTasks] = useState(0);
   const [numCompletedTasks, setNumCompletedTasks] = useState(0);
   const [numTotalTasks, setNumTotalTasks] = useState(0);
+
   const [membersStatus, setMembersStatus] = useState([]);
   const [workHours, setWorkHours] = useState([]);
+  const [avgTasksPerMember, setAvgTasksPerMember] = useState([]);
+  const [avgHoursPerMember, setAvgHoursPerMember] = useState([]);
+
+  const [kpiGrades, setKpiGrades] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
     async function fetchSprints() {
@@ -48,18 +55,28 @@ function AnalyticsView({ user }) {
 
 
   async function fetchDataForSprint(sprintId) {
-    try{
+    try {
       if (sprintId === 'allsprints') {
-        // Lógica para obtener datos de todos los sprints
         const totalTasks = await fetchNumTasksAllController(user.teamId);
         const completedTasks = await fetchNumCompletedTasksAllController(user.teamId);
         const pendingTasks = await fetchNumPendingTasksAllController(user.teamId);
         const lateTasks = await fetchNumLateTasksAllController(user.teamId);
+        const avgTasksPerMember = await fetchAVGTasksPerMemberController(user.teamId);
+        const avgHoursPerMember = await fetchAVGHours(user.teamId);
+
+         const kpiGrades = calculateKPIAVG(avgTasksPerMember, avgHoursPerMember);
+
+
         setNumTotalTasks(totalTasks);
         setNumCompletedTasks(completedTasks);
         setNumPendingTasks(pendingTasks);
         setNumLateTasks(lateTasks);
+
         setMembersStatus([]);
+        setWorkHours([]);
+        setAvgTasksPerMember(avgTasksPerMember);
+        setAvgHoursPerMember(avgHoursPerMember);
+        setKpiGrades(kpiGrades);
       } else {
         const totalTasks = await fetchNumTasksSprintController(user.teamId, sprintId);
         const completedTasks = await fetchNumCompletedTasksSprintController(user.teamId, sprintId);
@@ -67,16 +84,25 @@ function AnalyticsView({ user }) {
         const lateTasks = await fetchNumLateTasksSprintController(user.teamId, sprintId);
         const membersStatus = await fetchMembersStatus(user.teamId, sprintId);
         const workHours = await fetchWorkHours(user.teamId, sprintId);
+
+        const kpiGrades = calculateKPI(membersStatus, workHours);
+
         setNumTotalTasks(totalTasks);
         setNumCompletedTasks(completedTasks);
         setNumPendingTasks(pendingTasks);
         setNumLateTasks(lateTasks);
+
+
+        
+        setAvgTasksPerMember([]);
+        setAvgHoursPerMember([]);
         setMembersStatus(membersStatus);
         setWorkHours(workHours);
+        setKpiGrades(kpiGrades);
       }
     } catch (error) {
       console.error('Error fetching data for sprint:', error);
-      }
+    }
   }
 
   async function handleSprintChange(e) {
@@ -84,57 +110,10 @@ function AnalyticsView({ user }) {
     setSelectedSprint(sprintId);
     await fetchDataForSprint(sprintId);
   }
+
+  
   
 
-
-
-
-  const mockData = {
-    totalTasks: 150,
-    completedTasks: 90,
-    pendingTasks: 30,
-    lateTasks: 10,
-    inProgressTasks: 20,
-
-    gradePerMember: [
-      { member: 'Edgar', grade: 85 },
-      { member: 'Jose', grade: 78 },
-      { member: 'Eloy', grade: 92 },
-      { member: 'Juan', grade: 88 },
-      { member: 'Diego', grade: 95 },
-    ],
-
-    tasksPerUser: [
-      { member: 'Edgar', tasks: 30, completedTasks: 28, lateTasks: 0 },
-      { member: 'Jose', tasks: 25, completedTasks: 10, lateTasks: 3 },
-      { member: 'Eloy', tasks: 35, completedTasks: 24, lateTasks: 1 },
-      { member: 'Juan', tasks: 20, completedTasks: 12, lateTasks: 5 },
-      { member: 'Diego', tasks: 15, completedTasks: 9, lateTasks: 1 },
-    ],
-
-    timePerMember: [
-      { member: 'Edgar', totalTime: 6 },
-      { member: 'Jose', totalTime: 8 },
-      { member: 'Eloy', totalTime: 4 },
-      { member: 'Juan', totalTime: 7 },
-      { member: 'Diego', totalTime: 5 },
-    ],
-
-    recentActivity: [
-      { member: 'Edgar', action: 'Completed Task "Design Homepage"', time: '2 hours ago' },
-      { member: 'Diego', action: 'Created Task "Implement Login"', time: '3 hours ago' },
-      { member: 'Eloy', action: 'Updated Task "Fix Bug #123"', time: '5 hours ago' },
-      { member: 'Juan', action: 'Commented on Task "Write Sprint"', time: '1 day ago' },
-      { member: 'Jose', action: 'Completed Task "Deploy to Production"', time: '2 days ago' },
-    ],
-  }
-
-
-
-  function getMissingAndOngoingTasks() {
-    const { pendingTasks, lateTasks, inProgressTasks } = mockData;
-    return pendingTasks + lateTasks + inProgressTasks;
-  }
 
   return (
     <main className="analytics-container">
@@ -165,7 +144,6 @@ function AnalyticsView({ user }) {
             </div>
             <div className="analytics-kpi-card kpi-horizontal">
               <div className="analytics-kpi-progress-circle">
-                {/* Tamaño dinámico para el círculo de progreso */}
                 {numTotalTasks > 0 && (
                   <RadialBarChart width={96} height={96} cx={48} cy={48} innerRadius={36} outerRadius={44} barSize={14}
                     data={[{ name: 'Completed', value: numTotalTasks > 0 ? Math.round((numCompletedTasks / numTotalTasks) * 100) : 0, fill: '#fff' }]}
@@ -200,59 +178,176 @@ function AnalyticsView({ user }) {
         </div>
         <div className="analytics-charts-row">
           <div className="analytics-chart-grades">
-            <h2 className="analytics-chart-title">Tasks per User</h2>
-            <ResponsiveContainer width="100%" height="100%" minHeight={120}>
-              <BarChart
-                data={membersStatus.map((user) => ({
-                  member: user.user_name,
-                  completedTasks: user.completed_tasks,
-                  pendingTasks: user.pending_tasks,
-                  lateTasks: user.late_tasks,
-                }))}
-                margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-                barCategoryGap={10}
-                barGap={0}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                <XAxis dataKey="member" stroke="#fff" tick={{ fontSize: 14 }} />
-                <YAxis stroke="#fff" allowDecimals={false} tick={{ fontSize: 14 }} />
-                <Tooltip cursor={{ fill: '#444', opacity: 0.2 }} contentStyle={{ background: '#222', border: 'none', color: '#fff' }} />
-                <Legend wrapperStyle={{ color: '#fff' }} />
-                <Bar dataKey="completedTasks" fill="#7ed957" name="Completed" maxBarSize={32} radius={[8,8,0,0]}>
-                  <LabelList dataKey="completedTasks" position="top" fill="#fff" fontSize={14} />
-                </Bar>
-                <Bar dataKey="pendingTasks" fill="#ff9800" name="Pending" maxBarSize={32} radius={[8,8,0,0]}>
-                  <LabelList dataKey="pendingTasks" position="top" fill="#fff" fontSize={14} />
-                </Bar>
-                <Bar dataKey="lateTasks" fill="#c56261" name="Late" maxBarSize={32} radius={[8,8,0,0]}>
-                  <LabelList dataKey="lateTasks" position="top" fill="#fff" fontSize={14} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {selectedSprint !== 'allsprints' ? (
+              <>
+                <h2 className="analytics-chart-title">Tasks per User</h2>
+                <ResponsiveContainer width="100%" height="100%" minHeight={120}>
+                  <BarChart
+                    data={membersStatus.map((user) => ({
+                      member: user.user_name,
+                      completedTasks: user.completed_tasks,
+                      pendingTasks: user.pending_tasks,
+                      lateTasks: user.late_tasks,
+                    }))}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                    barCategoryGap={10}
+                    barGap={0}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                    <XAxis dataKey="member" stroke="#fff" tick={{ fontSize: 14 }} />
+                    <YAxis stroke="#fff" allowDecimals={false} tick={{ fontSize: 14 }} />
+                    <Tooltip
+                      cursor={{ fill: '#444', opacity: 0.2 }}
+                      contentStyle={{ background: '#222', border: 'none', color: '#fff' }}
+                    />
+                    <Legend wrapperStyle={{ color: '#fff' }} />
+                    <Bar
+                      dataKey="completedTasks"
+                      fill="#7ed957"
+                      name="Completed"
+                      maxBarSize={32}
+                      radius={[8, 8, 0, 0]}
+                    >
+                      <LabelList dataKey="completedTasks" position="top" fill="#fff" fontSize={14} />
+                    </Bar>
+                    <Bar
+                      dataKey="pendingTasks"
+                      fill="#ff9800"
+                      name="Pending"
+                      maxBarSize={32}
+                      radius={[8, 8, 0, 0]}
+                    >
+                      <LabelList dataKey="pendingTasks" position="top" fill="#fff" fontSize={14} />
+                    </Bar>
+                    <Bar
+                      dataKey="lateTasks"
+                      fill="#c56261"
+                      name="Late"
+                      maxBarSize={32}
+                      radius={[8, 8, 0, 0]}
+                    >
+                      <LabelList dataKey="lateTasks" position="top" fill="#fff" fontSize={14} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </>
+            ) : (
+              <>
+                <h2 className="analytics-chart-title">AVG Tasks per Sprint</h2>
+                <ResponsiveContainer width="100%" height="100%" minHeight={120}>
+                  <BarChart
+                    data={avgTasksPerMember.map((user) => ({
+                      member: user.user_name,
+                      totalTasks: user.avg_total_tasks,
+                      completedTasks: user.avg_completed_tasks,
+                      pendingTasks: user.avg_pending_tasks,
+                      lateTasks: user.avg_late_tasks,
+                    }))}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                    barCategoryGap={10}
+                    barGap={0}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                    <XAxis dataKey="member" stroke="#fff" tick={{ fontSize: 14 }} />
+                    <YAxis stroke="#fff" allowDecimals={false} tick={{ fontSize: 14 }} />
+                    <Tooltip
+                      cursor={{ fill: '#444', opacity: 0.2 }}
+                      contentStyle={{ background: '#222', border: 'none', color: '#fff' }}
+                    />
+                    <Legend wrapperStyle={{ color: '#fff' }} />
+                    <Bar
+                      dataKey="totalTasks"
+                      fill="#8884d8"
+                      name="Total Tasks"
+                      maxBarSize={32}
+                      radius={[8, 8, 0, 0]}
+                    >
+                      <LabelList dataKey="totalTasks" position="top" fill="#fff" fontSize={14} />
+                    </Bar>
+                    <Bar
+                      dataKey="completedTasks"
+                      fill="#7ed957"
+                      name="Completed"
+                      maxBarSize={32}
+                      radius={[8, 8, 0, 0]}
+                    >
+                      <LabelList dataKey="completedTasks" position="top" fill="#fff" fontSize={14} />
+                    </Bar>
+                    <Bar
+                      dataKey="pendingTasks"
+                      fill="#ff9800"
+                      name="Pending"
+                      maxBarSize={32}
+                      radius={[8, 8, 0, 0]}
+                    >
+                      <LabelList dataKey="pendingTasks" position="top" fill="#fff" fontSize={14} />
+                    </Bar>
+                    <Bar
+                      dataKey="lateTasks"
+                      fill="#c56261"
+                      name="Late"
+                      maxBarSize={32}
+                      radius={[8, 8, 0, 0]}
+                    >
+                      <LabelList dataKey="lateTasks" position="top" fill="#fff" fontSize={14} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </>
+            )}
           </div>
           <div className="analytics-chart-tasks">
-            <h2 className="analytics-chart-title">Hours per Member</h2>
-            <ResponsiveContainer width="100%" height="90%">
-              <BarChart 
-                data={workHours.map((user) => ({
-                  member: user.user_name,
-                  totalTime: user.total_work_hours,
-                }))}
-                margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                <XAxis dataKey="member" stroke="#fff" />
-                <YAxis stroke="#fff" />
-                <Tooltip 
-                  cursor={{ fill: '#444', opacity: 0.2 }} 
-                  contentStyle={{ background: '#222', border: 'none', color: '#fff' }} 
-                />
-                <Legend wrapperStyle={{ color: '#fff' }} />
-                <Bar dataKey="totalTime" fill="#8884d8" name="Total Hours" maxBarSize={40} radius={[8, 8, 0, 0]}>
-                  <LabelList dataKey="totalTime" position="top" fill="#fff" fontSize={14} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+             {selectedSprint !== 'allsprints' ? (
+              <>
+                <h2 className="analytics-chart-title">Hours per Member</h2>
+                <ResponsiveContainer width="100%" height="90%">
+                  <BarChart 
+                    data={workHours.map((user) => ({
+                      member: user.user_name,
+                      totalTime: user.total_work_hours,
+                    }))}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                    <XAxis dataKey="member" stroke="#fff" />
+                    <YAxis stroke="#fff" />
+                    <Tooltip 
+                      cursor={{ fill: '#444', opacity: 0.2 }} 
+                      contentStyle={{ background: '#222', border: 'none', color: '#fff' }} 
+                    />
+                    <Legend wrapperStyle={{ color: '#fff' }} />
+                    <Bar dataKey="totalTime" fill="#8884d8" name="Total Hours" maxBarSize={40} radius={[8, 8, 0, 0]}>
+                      <LabelList dataKey="totalTime" position="top" fill="#fff" fontSize={14} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </>
+            ) : (
+              <>
+                <h2 className="analytics-chart-title">AVG Hours per Sprint</h2>
+                <ResponsiveContainer width="100%" height="90%">
+                  <BarChart 
+                    data={avgHoursPerMember.map((user) => ({
+                      member: user.user_name,
+                      avgHours: user.avg_hours_per_sprint,
+                    }))}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                    <XAxis dataKey="member" stroke="#fff" />
+                    <YAxis stroke="#fff" />
+                    <Tooltip 
+                      cursor={{ fill: '#444', opacity: 0.2 }} 
+                      contentStyle={{ background: '#222', border: 'none', color: '#fff' }}
+                    />
+                    <Legend wrapperStyle={{ color: '#fff' }} />
+                    <Bar dataKey="avgHours" fill="#8884d8" name="Avg Hours" maxBarSize={40} radius={[8, 8, 0, 0]}>
+                      <LabelList dataKey="avgHours" position="top" fill="#fff" fontSize={14} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </>
+            )}
           </div>
         </div>
         <div className="analytics-activity-row">
@@ -261,7 +356,7 @@ function AnalyticsView({ user }) {
             <h2 className="analytics-chart-title">KPI's per Member</h2>
             <ResponsiveContainer width="100%" height="100%" minHeight={120}>
               <BarChart
-                data={mockData.gradePerMember}
+                data={kpiGrades}
                 margin={{ top: 0, right: 30, left: 0, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#444" />
@@ -278,7 +373,7 @@ function AnalyticsView({ user }) {
           <div className="analytics-recent-activity">
             <h2 className="analytics-chart-title">Recent Activity</h2>
             <div className="analytics-activity-list">
-              {mockData.recentActivity.map((activity, idx) => (
+              {recentActivity.map((activity, idx) => (
                 <div key={idx} className="analytics-activity-item">
                   <span className="analytics-activity-member">{activity.member}</span>
                   <span className="analytics-activity-action">{activity.action}</span>

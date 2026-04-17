@@ -89,3 +89,22 @@ export function fetchWorkHoursSprint(teamId, sprintId) {
         return response.json();
     });
 }
+
+
+export function fetchAVGTasksPerMember( teamId) {
+    return fetch(`${API_LIST}/analytics/avgtasks/${teamId}`).then((response) => {
+        if (!response.ok) {
+            throw new Error('Error fetching average tasks per member');
+        }
+        return response.json();
+    });
+}
+
+export function fetchAVGHoursPerMember(teamId) {
+    return fetch(`${API_LIST}/analytics/avghours/${teamId}`).then((response) => {
+        if (!response.ok) {
+            throw new Error('Error fetching average hours per member');
+        }
+        return response.json();
+    });
+}

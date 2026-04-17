@@ -102,4 +102,65 @@ public class StadisticsService {
                 "total_work_hours", rs.getInt("total_work_hours")));
     }
 
+    // AVE tasks per status by sprint and team
+    public List<Map<String, Object>> getAverageTasksPerStatus(int teamId) {
+        String sql = "SELECT \r\n" + //
+                "    u.id AS user_id,\r\n" + //
+                "    u.name AS user_name,\r\n" + //
+                "\r\n" + //
+                "    AVG(completed) AS avg_completed_tasks,\r\n" + //
+                "    AVG(late) AS avg_late_tasks,\r\n" + //
+                "    AVG(pending) AS avg_pending_tasks\r\n" + //
+                "\r\n" + //
+                "FROM (\r\n" + //
+                "    SELECT \r\n" + //
+                "        t.user_id,\r\n" + //
+                "        t.sprint_id,\r\n" + //
+                "\r\n" + //
+                "        SUM(CASE WHEN ts.name = 'DONE' THEN 1 ELSE 0 END) AS completed,\r\n" + //
+                "        SUM(CASE WHEN ts.name = 'LATE' THEN 1 ELSE 0 END) AS late,\r\n" + //
+                "        SUM(CASE WHEN ts.name IN ('PENDING', 'ON GOING') THEN 1 ELSE 0 END) AS pending\r\n" + //
+                "\r\n" + //
+                "    FROM TASKS t\r\n" + //
+                "    JOIN TASK_STATE ts ON ts.id = t.state_id\r\n" + //
+                "    JOIN SPRINT s ON s.id = t.sprint_id\r\n" + //
+                "    WHERE s.team_id = ?\r\n" + //
+                "\r\n" + //
+                "    GROUP BY t.user_id, t.sprint_id\r\n" + //
+                ") sprint_stats\r\n" + //
+                "\r\n" + //
+                "JOIN APP_USER u ON u.id = sprint_stats.user_id\r\n" + //
+                "\r\n" + //
+                "GROUP BY u.id, u.name;";
+        return jdbcTemplate.query(sql, new Object[] { teamId }, (rs, rowNum) -> Map.of(
+                "user_name", rs.getString("user_name"),
+                "avg_completed_tasks", rs.getDouble("avg_completed_tasks"),
+                "avg_late_tasks", rs.getDouble("avg_late_tasks"),
+                "avg_pending_tasks", rs.getDouble("avg_pending_tasks"),
+                "avg_total_tasks", rs.getDouble("avg_completed_tasks") + rs.getDouble("avg_late_tasks") + rs.getDouble("avg_pending_tasks")));
+    }
+
+    // AVG hours per sprint by team
+    public List<Map<String, Object>> getAverageWorkHoursPerSprint(int teamId) {
+        String sql = "SELECT \r\n" + //
+                "    u.id AS user_id,\r\n" + //
+                "    u.name AS user_name,\r\n" + //
+                "    AVG(total_hours) AS avg_hours_per_sprint\r\n" + //
+                "FROM (\r\n" + //
+                "    SELECT \r\n" + //
+                "        t.user_id,\r\n" + //
+                "        t.sprint_id,\r\n" + //
+                "        COALESCE(SUM(t.spent_hours), 0) AS total_hours\r\n" + //
+                "    FROM TASKS t\r\n" + //
+                "    JOIN SPRINT s ON s.id = t.sprint_id\r\n" + //
+                "    WHERE s.team_id = ?\r\n" + //
+                "    GROUP BY t.user_id, t.sprint_id\r\n" + //
+                ") sprint_hours\r\n" + //
+                "JOIN APP_USER u ON u.id = sprint_hours.user_id\r\n" + //
+                "GROUP BY u.id, u.name;";
+        return jdbcTemplate.query(sql, new Object[] { teamId }, (rs, rowNum) -> Map.of(
+                "user_name", rs.getString("user_name"),
+                "avg_hours_per_sprint", rs.getDouble("avg_hours_per_sprint")));
+    }
+
 }

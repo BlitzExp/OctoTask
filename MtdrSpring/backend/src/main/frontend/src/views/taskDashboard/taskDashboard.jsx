@@ -28,7 +28,6 @@ function TaskDashboard({ user }) {
   };
 
   const handleSaveTask = (updatedTask) => {
-    console.log('Saving task:', updatedTask);
     const updatedTasks = tasks.map(task =>
       task.id === updatedTask.id ? updatedTask : task
     );
@@ -44,10 +43,8 @@ function TaskDashboard({ user }) {
       try {
         console.log('Fetching tasks for user:', user.username);
         if (user.role === 'admin') {
-          console.log('Entre filtro admin');
           const tasksGet = await fetchTeamTasksCon(user.teamId);
           setTasks(tasksGet);
-          console.log('Tasks set for admin:', tasksGet);
         } else {
           const tasksGet = await getAllTasks(user.id);
           setTasks(tasksGet);

@@ -137,15 +137,116 @@ export async function fetchAVGHours(teamId) {
 }
 
 export function calculateKPIAVG(avgTasksPerMember, avgHoursPerMember) {
-    const kpiGrades = {
-        tasks: 'N/A',
-        hours: 'N/A',
-    };
+  return calculateKPIFromInputs({
+    tasksPerMember: avgTasksPerMember,
+    hoursPerMember: avgHoursPerMember,
+    completedKey: "avg_completed_tasks",
+    pendingKey: "avg_pending_tasks",
+    lateKey: "avg_late_tasks",
+    totalKey: "avg_total_tasks",
+    hoursKey: "avg_hours_per_sprint",
+  });
 }
 
-export function calculateKPI(TasksPerMember, HoursPerMember) {
-  const kpiGrades = {
-    tasks: 'N/A',
-    hours: 'N/A',
-  };
+export function calculateKPI(tasksPerMember, hoursPerMember) {
+  return calculateKPIFromInputs({
+    tasksPerMember,
+    hoursPerMember,
+    completedKey: "completed_tasks",
+    pendingKey: "pending_tasks",
+    lateKey: "late_tasks",
+    totalKey: null,
+    hoursKey: "total_work_hours",
+  });
+}
+
+function calculateKPIFromInputs({
+  tasksPerMember,
+  hoursPerMember,
+  completedKey,
+  pendingKey,
+  lateKey,
+  totalKey,
+  hoursKey,
+}) {
+  const safeTasks = Array.isArray(tasksPerMember) ? tasksPerMember : [];
+  const safeHours = Array.isArray(hoursPerMember) ? hoursPerMember : [];
+
+  const hoursByMember = {};
+  for (const row of safeHours) {
+    const member = toNonEmptyString(row?.user_name);
+    if (!member) continue;
+    hoursByMember[member] = toNumber(row?.[hoursKey]);
+  }
+
+  const results = safeTasks
+    .map((tasksRow) => {
+      const member = toNonEmptyString(tasksRow?.user_name);
+      if (!member) return null;
+
+      const completed = toNumber(tasksRow?.[completedKey]);
+      const pending = toNumber(tasksRow?.[pendingKey]);
+      const late = toNumber(tasksRow?.[lateKey]);
+      const total = totalKey
+        ? toNumber(tasksRow?.[totalKey])
+        : completed + pending + late;
+      const hours = toNumber(hoursByMember[member]);
+
+      const grade = computePerformanceScore({
+        completedTasks: completed,
+        pendingTasks: pending,
+        lateTasks: late,
+        totalTasks: total,
+        timeWorkingHours: hours,
+      });
+
+      return { member, grade };
+    })
+    .filter(Boolean);
+
+  results.sort((a, b) => (b.grade ?? 0) - (a.grade ?? 0));
+  return results;
+}
+
+// Performance_Score = ((completed_tasks / total_tasks) * 50)
+//                 + (((total_tasks - late_tasks) / total_tasks) * 20)
+//                 + (((total_tasks - pending_tasks) / total_tasks) * 10)
+//                 + ((completed_tasks / time_working_hours) * 20)
+function computePerformanceScore({
+  completedTasks,
+  pendingTasks,
+  lateTasks,
+  totalTasks,
+  timeWorkingHours,
+}) {
+  const completed = Math.max(0, toNumber(completedTasks));
+  const pending = Math.max(0, toNumber(pendingTasks));
+  const late = Math.max(0, toNumber(lateTasks));
+  const total = Math.max(0, toNumber(totalTasks));
+  const hours = Math.max(0, toNumber(timeWorkingHours));
+
+  if (total === 0) return 0;
+
+  const part1 = (completed / total) * 50;
+  const part2 = ((total - late) / total) * 20;
+  const part3 = ((total - pending) / total) * 10;
+  const part4 = hours > 0 ? (completed / hours) * 20 : 0;
+
+  return Math.round(clamp(part1 + part2 + part3 + part4, 0, 100));
+}
+
+function clamp(value, min, max) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return min;
+  return Math.min(max, Math.max(min, n));
+}
+
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function toNonEmptyString(value) {
+  const s = typeof value === "string" ? value.trim() : "";
+  return s.length > 0 ? s : "";
 }

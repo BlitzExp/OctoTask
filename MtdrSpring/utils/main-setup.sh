@@ -5,6 +5,12 @@
 # Fail on error
 set -e
 
+# Existing Autonomous Database to use for this deployment
+DEFAULT_MTDR_DB_OCID="${TEST_MTDR_DB_OCID:-ocid1.autonomousdatabase.oc1.mx-queretaro-1.anyxeljry52vqmiavcfjww7mzcjekoozcgdlr3hjip5osfsoavrhsxjhxv4q}"
+DEFAULT_MTDR_DB_DISPLAY_NAME="${TEST_MTDR_DB_DISPLAY_NAME:-OctoTask}"
+DEFAULT_DB_APP_USERNAME="${TEST_DB_USERNAME:-octotask}"
+DEFAULT_DB_APP_PASSWORD="${TEST_DB_PASSWORD:-Juanddios_1234}"
+
 #Check if home is set
 if test -z "$MTDRWORKSHOP_LOCATION"; then
   echo "ERROR: this script requires MTDRWORKSHOP_LOCATION to be set"
@@ -16,6 +22,71 @@ if state_done SETUP_VERIFIED; then
   echo "SETUP_VERIFIED completed"
   exit
 fi
+
+find_existing_compartment() {
+  local tenancy_ocid="$1"
+  local compartment_name="$2"
+
+  oci iam compartment list \
+    --compartment-id "$tenancy_ocid" \
+    --compartment-id-in-subtree true \
+    --access-level ANY \
+    --all \
+    --name "$compartment_name" \
+    --query 'data[?"lifecycle-state"!=`DELETED`] | [0].id' \
+    --raw-output 2>/dev/null || true
+}
+
+wait_for_compartment_active() {
+  local compartment_ocid="$1"
+  local compartment_status=""
+
+  while true; do
+    compartment_status=$(oci iam compartment get \
+      --compartment-id "$compartment_ocid" \
+      --query 'data."lifecycle-state"' \
+      --raw-output 2>/dev/null || true)
+
+    if test "$compartment_status" = 'ACTIVE'; then
+      return 0
+    fi
+
+    if test -z "$compartment_status" || test "$compartment_status" = "null"; then
+      echo "Waiting for compartment lookup to become available"
+    else
+      echo "Waiting for the compartment to become ACTIVE (current: $compartment_status)"
+    fi
+
+    sleep 10
+  done
+}
+
+get_compartment_from_db() {
+  local db_ocid="$1"
+
+  oci db autonomous-database get \
+    --autonomous-database-id "$db_ocid" \
+    --query 'data."compartment-id"' \
+    --raw-output 2>/dev/null || true
+}
+
+validate_autonomous_db() {
+  local db_ocid="$1"
+
+  oci db autonomous-database get \
+    --autonomous-database-id "$db_ocid" \
+    --query 'data.id' \
+    --raw-output 2>/dev/null || true
+}
+
+get_autonomous_db_display_name() {
+  local db_ocid="$1"
+
+  oci db autonomous-database get \
+    --autonomous-database-id "$db_ocid" \
+    --query 'data."display-name"' \
+    --raw-output 2>/dev/null || true
+}
 
 #Identify Run Type
 while ! state_done RUN_TYPE; do
@@ -86,7 +157,7 @@ while ! state_done RUN_NAME; do
   # Validate run name.  Must be between 1 and 13 characters, only letters or numbers, starting with letter
   if [[ "$DN" =~ ^[a-zA-Z][a-zA-Z0-9]{0,12}$ ]]; then
     state_set RUN_NAME `echo "$DN" | awk '{print tolower($0)}'`
-    state_set MTDR_DB_NAME "$(state_get RUN_NAME)$(state_get MTDR_KEY)"
+    state_set MTDR_DB_NAME "$DEFAULT_MTDR_DB_DISPLAY_NAME"
   else
     echo "Error: Invalid directory name $RN.  The directory name must be between 1 and 13 characters,"
     echo "containing only letters or numbers, starting with a letter.  Please restart the workshop with a valid directory name."
@@ -109,28 +180,56 @@ while ! state_done REGION; do
   state_set REGION "$OCI_REGION" # Set in cloud shell env
 done
 
-
-#create the compartment
-##newest code added later
+#create/use the compartment
 while ! state_done COMPARTMENT_OCID; do
+  COMPARTMENT_OCID=""
+
   if test $(state_get RUN_TYPE) -ne 3; then
     read -p "if you have your own compartment, enter it here: (if not, hit enter) " COMPARTMENT_OCID
-    ##newest condition added
-    if test "$COMPARTMENT_OCID" != "" && test `oci iam compartment get --compartment-id "$COMPARTMENT_OCID" --query 'data."lifecycle-state"' --raw-output 2>/dev/null` == 'ACTIVE'; then
-      state_set COMPARTMENT_OCID "$COMPARTMENT_OCID"
+
+    if test "$COMPARTMENT_OCID" != ""; then
+      PROVIDED_COMPARTMENT_STATUS=$(oci iam compartment get \
+        --compartment-id "$COMPARTMENT_OCID" \
+        --query 'data."lifecycle-state"' \
+        --raw-output 2>/dev/null || true)
+
+      if test "$PROVIDED_COMPARTMENT_STATUS" = 'ACTIVE'; then
+        echo "Using provided compartment $COMPARTMENT_OCID"
+      else
+        echo "The provided compartment OCID could not be validated as ACTIVE"
+        continue
+      fi
     else
-      echo "Resources will be created in a new compartment named $(state_get RUN_NAME)"
-      COMPARTMENT_OCID=`oci iam compartment create --compartment-id "$(state_get TENANCY_OCID)" --name "$(state_get RUN_NAME)" --description "mtdrworkshop" --query 'data.id' --raw-output`
-      sleep 30
-      COMPARTMENT_STATUS=$(oci iam compartment get --compartment-id "$COMPARTMENT_OCID" --query 'data."lifecycle-state"' --raw-output 2>/dev/null)
-      echo "Waiting for compartment $COMPARTMENT_STATUS"
+      DB_BASED_COMPARTMENT_OCID=$(get_compartment_from_db "$DEFAULT_MTDR_DB_OCID")
+      DB_BASED_COMPARTMENT_STATUS=$(oci iam compartment get \
+        --compartment-id "$DB_BASED_COMPARTMENT_OCID" \
+        --query 'data."lifecycle-state"' \
+        --raw-output 2>/dev/null || true)
+
+      if test "$DB_BASED_COMPARTMENT_OCID" != "" && test "$DB_BASED_COMPARTMENT_OCID" != "null" && test "$DB_BASED_COMPARTMENT_STATUS" = "ACTIVE"; then
+        COMPARTMENT_OCID="$DB_BASED_COMPARTMENT_OCID"
+        echo "Using the existing compartment from Autonomous Database $DEFAULT_MTDR_DB_DISPLAY_NAME: $COMPARTMENT_OCID"
+      else
+        EXISTING_COMPARTMENT_OCID=$(find_existing_compartment "$(state_get TENANCY_OCID)" "$(state_get RUN_NAME)")
+
+        if test "$EXISTING_COMPARTMENT_OCID" != "" && test "$EXISTING_COMPARTMENT_OCID" != "null"; then
+          COMPARTMENT_OCID="$EXISTING_COMPARTMENT_OCID"
+          echo "Using existing compartment named $(state_get RUN_NAME): $COMPARTMENT_OCID"
+        else
+          echo "Resources will be created in a new compartment named $(state_get RUN_NAME)"
+          COMPARTMENT_OCID=`oci iam compartment create --compartment-id "$(state_get TENANCY_OCID)" --name "$(state_get RUN_NAME)" --description "mtdrworkshop" --query 'data.id' --raw-output`
+        fi
+      fi
     fi
   fi
-  while ! test `oci iam compartment get --compartment-id "$COMPARTMENT_OCID" --query 'data."lifecycle-state"' --raw-output 2>/dev/null`"" == 'ACTIVE'; do
-    echo "Waiting for the compartment to become ACTIVE"
-    sleep 60
-  done
-  echo "Compartment created successfully"
+
+  if test "$COMPARTMENT_OCID" = "" || test "$COMPARTMENT_OCID" = "null"; then
+    echo "ERROR: Could not determine COMPARTMENT_OCID"
+    exit 1
+  fi
+
+  wait_for_compartment_active "$COMPARTMENT_OCID"
+  echo "Compartment ready successfully"
   state_set COMPARTMENT_OCID "$COMPARTMENT_OCID"
 done
 
@@ -195,12 +294,12 @@ while ! state_done DOCKER_REGISTRY; do
       export OCI_CLI_PROFILE=$(state_get REGION)
       break
     else
-      # echo "Docker login failed.  Retrying"
       RETRIES=$((RETRIES+1))
       sleep 5
     fi
   done
 done
+
 # run oke-setup.sh in background
 if ! state_get OKE_SETUP; then
   if ps -ef | grep "$MTDRWORKSHOP_LOCATION/utils/oke-setup.sh" | grep -v grep; then
@@ -221,28 +320,11 @@ if ! state_get DB_SETUP; then
   fi
 fi
 
-# Collect DB password
+# Use existing application DB credentials
 if ! state_done DB_PASSWORD; then
-  echo
-  echo 'Database passwords must be 12 to 30 characters and contain at least one uppercase letter,'
-  echo 'one lowercase letter, and one number. The password cannot contain the double quote (")'
-  echo 'character or the word "admin".'
-  echo
-
-  while true; do
-    if test -z "$TEST_DB_PASSWORD"; then
-      read -s -r -p "Enter the password to be used for the MTDR database: " PW
-    else
-      PW="$TEST_DB_PASSWORD"
-    fi
-    if [[ ${#PW} -ge 12 && ${#PW} -le 30 && "$PW" =~ [A-Z] && "$PW" =~ [a-z] && "$PW" =~ [0-9] && "$PW" != *admin* && "$PW" != *'"'* ]]; then
-      echo
-      break
-    else
-      echo "Invalid Password, please retry"
-    fi
-  done
-  BASE64_DB_PASSWORD=`echo -n "$PW" | base64`
+  BASE64_DB_USERNAME=`echo -n "$DEFAULT_DB_APP_USERNAME" | base64`
+  BASE64_DB_PASSWORD=`echo -n "$DEFAULT_DB_APP_PASSWORD" | base64`
+  state_set DB_USERNAME "$DEFAULT_DB_APP_USERNAME"
 fi
 
 # create UI username
@@ -289,18 +371,27 @@ if ! state_done PROVISIONING; then
   echo
 fi
 
-
-# Get MTDR_DB OCID
+# Use the existing Autonomous Database directly
 while ! state_done MTDR_DB_OCID; do
-  MTDR_DB_OCID=`oci db autonomous-database list --compartment-id "$(cat state/COMPARTMENT_OCID)" --query 'join('"' '"',data[?"display-name"=='"'MTDRDB'"'].id)' --raw-output`
-  if [[ "$MTDR_DB_OCID" =~ ocid1.autonomousdatabase* ]]; then
-    state_set MTDR_DB_OCID "$MTDR_DB_OCID"
+  VALIDATED_DB_OCID=$(validate_autonomous_db "$DEFAULT_MTDR_DB_OCID")
+
+  if test "$VALIDATED_DB_OCID" = "$DEFAULT_MTDR_DB_OCID"; then
+    ACTUAL_DB_DISPLAY_NAME=$(get_autonomous_db_display_name "$DEFAULT_MTDR_DB_OCID")
+
+    if test "$ACTUAL_DB_DISPLAY_NAME" != "" && test "$ACTUAL_DB_DISPLAY_NAME" != "null"; then
+      state_set MTDR_DB_NAME "$ACTUAL_DB_DISPLAY_NAME"
+      echo "Using Autonomous Database: $ACTUAL_DB_DISPLAY_NAME ($DEFAULT_MTDR_DB_OCID)"
+    else
+      state_set MTDR_DB_NAME "$DEFAULT_MTDR_DB_DISPLAY_NAME"
+      echo "Using Autonomous Database OCID: $DEFAULT_MTDR_DB_OCID"
+    fi
+
+    state_set MTDR_DB_OCID "$DEFAULT_MTDR_DB_OCID"
   else
-    echo "ERROR: Incorrect Order DB OCID: $MTDR_DB_OCID"
-    exit
+    echo "ERROR: Could not validate Autonomous Database OCID: $DEFAULT_MTDR_DB_OCID"
+    exit 1
   fi
 done
-
 
 # Wait for kubectl Setup
 if ! state_done OKE_NAMESPACE; then
@@ -313,15 +404,15 @@ if ! state_done OKE_NAMESPACE; then
   echo
 fi
 
-# Collect DB password and create secret
+# Create DB application credentials secret
 while ! state_done DB_PASSWORD; do
-  echo "collecting DB password and creating secret"
+  echo "creating DB application credentials secret"
   while true; do
     if kubectl create -n mtdrworkshop -f -; then
       state_set_done DB_PASSWORD
       break
     else
-      echo 'Error: Creating DB Password Secret Failed.  Retrying...'
+      echo 'Error: Creating DB credentials secret failed. Retrying...'
       sleep 10
     fi <<!
 {
@@ -331,6 +422,7 @@ while ! state_done DB_PASSWORD; do
       "name": "dbuser"
    },
    "data": {
+      "dbusername": "${BASE64_DB_USERNAME}",
       "dbpassword": "${BASE64_DB_PASSWORD}"
    }
 }
@@ -338,21 +430,11 @@ while ! state_done DB_PASSWORD; do
   done
 done
 
-
-# Set admin password in order database
+# We are using an existing DB user, so do not modify the Autonomous Database ADMIN password
 while ! state_done MTDR_DB_PASSWORD_SET; do
-  echo "setting admin password in mtdr_db"
-  # get password from vault secret
-  DB_PASSWORD=`kubectl get secret dbuser -n mtdrworkshop --template={{.data.dbpassword}} | base64 --decode`
-  umask 177
-  echo '{"adminPassword": "'"$DB_PASSWORD"'"}' > temp_params
-  umask 22
-  oci db autonomous-database update --autonomous-database-id "$(state_get MTDR_DB_OCID)" --from-json "file://temp_params" >/dev/null
-  rm temp_params
+  echo "Skipping Autonomous Database admin password update; using existing user $(state_get DB_USERNAME)"
   state_set_done MTDR_DB_PASSWORD_SET
 done
-
-
 
 # Wait for OKE Setup
 while ! state_done OKE_SETUP; do
@@ -384,7 +466,6 @@ while ! state_done UI_PASSWORD; do
   done
 done
 
-
 ps -ef | grep "$MTDRWORKSHOP_LOCATION/utils" | grep -v grep
 
 bgs="JAVA_BUILDS OKE_SETUP DB_SETUP PROVISIONING"
@@ -395,13 +476,11 @@ while ! state_done SETUP_VERIFIED; do
     if state_done $bg; then
       echo "$bg has completed"
     else
-      # echo "$bg is running"
       NOT_DONE=$((NOT_DONE+1))
       bg_not_done="$bg_not_done $bg"
     fi
   done
   if test "$NOT_DONE" -gt 0; then
-    # echo "Log files are located in $MTDRWORKSHOP_LOG"
     bgs=$bg_not_done
     echo -ne r"\033[2K\r$bgs still running "
     sleep 10

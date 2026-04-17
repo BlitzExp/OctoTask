@@ -5,9 +5,12 @@
 set -e
 
 APP_DB_USER="${DB_APP_USERNAME:-OCTOTASK}"
-DEFAULT_WALLET_DIR="${EXISTING_WALLET_DIR:-$MTDRWORKSHOP_LOCATION/wallet}"
+WALLET_DIR="${MTDRWORKSHOP_LOCATION}/wallet"
+WALLET_ZIP="${WALLET_DIR}/wallet.zip"
+# Wallet download password, not the DB user password
+WALLET_PASSWORD="${WALLET_PASSWORD:-Wallet1234}"
 
-# Create Object Store Bucket (still kept because other parts of the flow may expect it)
+# Create Object Store Bucket (kept because later steps use it)
 while ! state_done OBJECT_STORE_BUCKET; do
   echo "Checking object storage bucket"
   if oci os bucket get --name "$(state_get RUN_NAME)-$(state_get MTDR_KEY)" >/dev/null 2>&1; then
@@ -25,42 +28,48 @@ while ! state_done MTDR_DB_OCID; do
   sleep 2
 done
 
-# Use existing wallet instead of generating a new one
+# Download wallet into the expected folder
 while ! state_done WALLET_GET; do
-  echo "using existing wallet"
+  echo "downloading wallet into ${WALLET_DIR}"
 
-  mkdir -p "$MTDRWORKSHOP_LOCATION/wallet"
+  rm -rf "${WALLET_DIR}"
+  mkdir -p "${WALLET_DIR}"
 
-  for f in README cwallet.sso ewallet.p12 keystore.jks ojdbc.properties sqlnet.ora tnsnames.ora truststore.jks; do
-    if test ! -f "$DEFAULT_WALLET_DIR/$f"; then
-      echo "ERROR: Wallet file not found: $DEFAULT_WALLET_DIR/$f"
-      echo "Put your existing wallet files in $DEFAULT_WALLET_DIR"
+  oci db autonomous-database generate-wallet \
+    --autonomous-database-id "$(state_get MTDR_DB_OCID)" \
+    --file "${WALLET_ZIP}" \
+    --password "${WALLET_PASSWORD}" \
+    --generate-type ALL
+
+  cd "${WALLET_DIR}"
+  unzip -o wallet.zip >/dev/null
+
+  for f in cwallet.sso ewallet.p12 keystore.jks ojdbc.properties sqlnet.ora tnsnames.ora truststore.jks; do
+    if test ! -f "${WALLET_DIR}/${f}"; then
+      echo "ERROR: Wallet file missing after download: ${f}"
       exit 1
     fi
   done
 
-  if test "$DEFAULT_WALLET_DIR" != "$MTDRWORKSHOP_LOCATION/wallet"; then
-    cp "$DEFAULT_WALLET_DIR"/* "$MTDRWORKSHOP_LOCATION/wallet"/
-  fi
-
+  cd "${MTDRWORKSHOP_LOCATION}"
   state_set_done WALLET_GET
-  echo "finished preparing existing wallet"
+  echo "finished downloading wallet"
 done
 
-# Upload cwallet.sso to Object Store if not already done
+# Upload cwallet.sso to Object Store
 while ! state_done CWALLET_SSO_OBJECT; do
   echo "uploading cwallet.sso to object storage"
-  cd "$MTDRWORKSHOP_LOCATION/wallet"
+  cd "${WALLET_DIR}"
   oci os object put \
     --bucket-name "$(state_get RUN_NAME)-$(state_get MTDR_KEY)" \
     --name "cwallet.sso" \
     --file "cwallet.sso" >/dev/null
-  cd "$MTDRWORKSHOP_LOCATION"
+  cd "${MTDRWORKSHOP_LOCATION}"
   state_set_done CWALLET_SSO_OBJECT
   echo "done uploading wallet object"
 done
 
-# Create authenticated link to wallet
+# Create authenticated link to wallet object
 while ! state_done CWALLET_SSO_AUTH_URL; do
   echo "creating authenticated link to wallet"
   ACCESS_URI=`oci os preauth-request create \
@@ -83,8 +92,8 @@ done
 
 # Create wallet secret for Kubernetes
 while ! state_done DB_WALLET_SECRET; do
-  echo "creating Inventory ATP Bindings"
-  cd "$MTDRWORKSHOP_LOCATION/wallet"
+  echo "creating db-wallet-secret"
+  cd "${WALLET_DIR}"
 
   cat - >sqlnet.ora <<!
 WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY="/mtdrworkshop/creds")))
@@ -94,12 +103,12 @@ SSL_SERVER_DN_MATCH=yes
   if kubectl create -f - -n mtdrworkshop; then
     state_set_done DB_WALLET_SECRET
   else
-    echo "Error: Failure to create db-wallet-secret. Retrying..."
+    echo 'Error: Failure to create db-wallet-secret. Retrying...'
     sleep 5
   fi <<!
 apiVersion: v1
 data:
-  README: $(base64 -w0 README)
+  README: $(base64 -w0 README 2>/dev/null || true)
   cwallet.sso: $(base64 -w0 cwallet.sso)
   ewallet.p12: $(base64 -w0 ewallet.p12)
   keystore.jks: $(base64 -w0 keystore.jks)
@@ -111,36 +120,36 @@ kind: Secret
 metadata:
   name: db-wallet-secret
 !
-  cd "$MTDRWORKSHOP_LOCATION"
+  cd "${MTDRWORKSHOP_LOCATION}"
 done
 
-# DB Connection Setup
-export TNS_ADMIN="$MTDRWORKSHOP_LOCATION/wallet"
+# Local DB connection setup
+export TNS_ADMIN="${WALLET_DIR}"
 
-cat - >"$TNS_ADMIN/sqlnet.ora" <<!
-WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY="$TNS_ADMIN")))
+cat - >"${TNS_ADMIN}/sqlnet.ora" <<!
+WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY="${TNS_ADMIN}")))
 SSL_SERVER_DN_MATCH=yes
 !
 
-# Prefer the real _tp service from tnsnames.ora
-MTDR_DB_SVC="$(grep -E '^[A-Za-z0-9_]+_tp[[:space:]]*=' "$TNS_ADMIN/tnsnames.ora" | head -n1 | cut -d= -f1 | xargs)"
-if test -z "$MTDR_DB_SVC"; then
+# Pick the first *_tp service from tnsnames.ora
+MTDR_DB_SVC="$(grep -E '^[A-Za-z0-9_]+_tp[[:space:]]*=' "${TNS_ADMIN}/tnsnames.ora" | head -n1 | cut -d= -f1 | xargs)"
+if test -z "${MTDR_DB_SVC}"; then
   MTDR_DB_SVC="$(state_get MTDR_DB_NAME)_tp"
 fi
 
-echo "Using DB service: $MTDR_DB_SVC"
+echo "Using DB service: ${MTDR_DB_SVC}"
 
-# Get DB username from secret if present, otherwise use OCTOTASK
+# Read DB username from secret if present
 DB_USERNAME="$(kubectl get secret dbuser -n mtdrworkshop --template='{{index .data "dbusername"}}' 2>/dev/null | base64 --decode || true)"
-if test -z "$DB_USERNAME"; then
-  DB_USERNAME="$APP_DB_USER"
+if test -z "${DB_USERNAME}"; then
+  DB_USERNAME="${APP_DB_USER}"
 fi
-echo "Using DB user: $DB_USERNAME"
+echo "Using DB user: ${DB_USERNAME}"
 
-# Get DB password from secret
+# Read DB password from secret
 while true; do
   if DB_PASSWORD=`kubectl get secret dbuser -n mtdrworkshop --template={{.data.dbpassword}} | base64 --decode`; then
-    if ! test -z "$DB_PASSWORD"; then
+    if ! test -z "${DB_PASSWORD}"; then
       break
     fi
   fi
@@ -148,19 +157,19 @@ while true; do
   sleep 5
 done
 
-# Wait for marker from main setup
+# Wait for marker from main-setup
 while ! state_done MTDR_DB_PASSWORD_SET; do
   echo "`date`: Waiting for MTDR_DB_PASSWORD_SET"
   sleep 2
 done
 
-# Use existing user/schema instead of creating TODOUSER
+# Use existing DB user/schema and ensure the table exists
 while ! state_done TODO_USER; do
-  echo "connecting to mtdr database as existing user $DB_USERNAME"
+  echo "connecting to database as existing user ${DB_USERNAME}"
 
   sqlplus /nolog <<!
 WHENEVER SQLERROR EXIT 1
-connect ${DB_USERNAME}/"$DB_PASSWORD"@$MTDR_DB_SVC
+connect ${DB_USERNAME}/"${DB_PASSWORD}"@${MTDR_DB_SVC}
 
 DECLARE
   v_count NUMBER;

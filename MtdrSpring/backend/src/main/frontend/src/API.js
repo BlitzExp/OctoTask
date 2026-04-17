@@ -19,7 +19,7 @@
 
 
 //local endpoint for testing
-const API_LIST = 'http://localhost:8080/api';
+const API_LIST = 'https://di2eyonlz5s7kmuektcddaw5zq.apigateway.mx-queretaro-1.oci.customer-oci.com/todolist';
 
 
 

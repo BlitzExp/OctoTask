@@ -80,33 +80,3 @@ if [ -z "$1" ]; then
 else
     kubectl apply -f <(istioctl kube-inject -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml) -n "$NAMESPACE"
 fi
-
-echo "Waiting two minutes before updating frontend API endpoint"
-sleep 120
-
-SERVICE_NAME=$(find_backend_load_balancer_service)
-if [ -z "$SERVICE_NAME" ]; then
-    echo "Error: could not find a LoadBalancer service for app $SERVICE_SELECTOR_APP"
-    exit 1
-fi
-
-echo "Using service $SERVICE_NAME to update frontend API endpoint"
-SERVICE_EXTERNAL_API=$(kubectl get service "$SERVICE_NAME" -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-if [ -z "$SERVICE_EXTERNAL_API" ]; then
-    SERVICE_EXTERNAL_API=$(kubectl get service "$SERVICE_NAME" -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-fi
-
-if [ -z "$SERVICE_EXTERNAL_API" ]; then
-    echo "Error: could not get external API for service $SERVICE_NAME"
-    exit 1
-fi
-
-API_LIST_URL="http://${SERVICE_EXTERNAL_API}/api"
-
-if [ ! -f "$FRONTEND_API_FILE" ]; then
-    echo "Error: frontend API file not found at $FRONTEND_API_FILE"
-    exit 1
-fi
-
-sed -i "s|^const API_LIST = .*|const API_LIST = '${API_LIST_URL}';|" "$FRONTEND_API_FILE"
-echo "Updated $FRONTEND_API_FILE with $API_LIST_URL"

@@ -10,6 +10,7 @@ DEFAULT_MTDR_DB_OCID="${TEST_MTDR_DB_OCID:-ocid1.autonomousdatabase.oc1.mx-quere
 DEFAULT_MTDR_DB_DISPLAY_NAME="${TEST_MTDR_DB_DISPLAY_NAME:-OctoTask}"
 DEFAULT_DB_APP_USERNAME="${TEST_DB_USERNAME:-octotask}"
 DEFAULT_DB_APP_PASSWORD="${TEST_DB_PASSWORD:-Juanddios_1234}"
+DEFAULT_RUN_NAME="${TEST_RUN_NAME:-octotask}"
 
 #Check if home is set
 if test -z "$MTDRWORKSHOP_LOCATION"; then
@@ -144,22 +145,15 @@ while ! state_done MTDR_KEY; do
 done
 
 
-#Get Run Name from directory name
+# Get Run Name
 while ! state_done RUN_NAME; do
-  cd $MTDRWORKSHOP_LOCATION
-  cd ../..
-  # Validate that a folder was creared
-  if test "$PWD" == ~; then
-    echo "ERROR: The workshop is not installed in a separate folder."
-    exit
-  fi
-  DN=`basename "$PWD"`
+  DN="$DEFAULT_RUN_NAME"
   # Validate run name.  Must be between 1 and 13 characters, only letters or numbers, starting with letter
   if [[ "$DN" =~ ^[a-zA-Z][a-zA-Z0-9]{0,12}$ ]]; then
     state_set RUN_NAME `echo "$DN" | awk '{print tolower($0)}'`
     state_set MTDR_DB_NAME "$DEFAULT_MTDR_DB_DISPLAY_NAME"
   else
-    echo "Error: Invalid directory name $RN.  The directory name must be between 1 and 13 characters,"
+    echo "Error: Invalid run name $DN.  The run name must be between 1 and 13 characters,"
     echo "containing only letters or numbers, starting with a letter.  Please restart the workshop with a valid directory name."
     exit
   fi

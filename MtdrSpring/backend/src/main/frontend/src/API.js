@@ -18,8 +18,8 @@
 // const API_LIST = 'https://di2eyonlz5s7kmuektcddaw5zq.apigateway.eu-frankfurt-1.oci.customer-oci.com/todolist';
 
 
-//local endpoint for testing
-const API_LIST = 'https://di2eyonlz5s7kmuektcddaw5zq.apigateway.mx-queretaro-1.oci.customer-oci.com/todolist';
+// Use the same host that serves the React app. Spring controllers are mounted under /api.
+const API_LIST = '/api';
 
 
 

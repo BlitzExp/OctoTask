@@ -1,5 +1,27 @@
 #!/bin/bash
 SCRIPT_DIR=$(pwd)
+NAMESPACE="mtdrworkshop"
+DEFAULT_SERVICE_NAME="todolistapp-springboot-service"
+SERVICE_SELECTOR_APP="todolistapp-springboot"
+FRONTEND_API_FILE="$SCRIPT_DIR/src/main/frontend/src/API.js"
+
+find_backend_load_balancer_service() {
+    local discovered_service
+
+    discovered_service=$(kubectl get services -n "$NAMESPACE" -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}{"\t"}{.spec.selector.app}{"\n"}{end}' | awk -v app="$SERVICE_SELECTOR_APP" '$2 == app { print $1; exit }')
+
+    if [ -n "$discovered_service" ]; then
+        echo "$discovered_service"
+        return 0
+    fi
+
+    if kubectl get service "$DEFAULT_SERVICE_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
+        echo "$DEFAULT_SERVICE_NAME"
+        return 0
+    fi
+
+    return 1
+}
 
 #Validation
 if [ -z "$DOCKER_REGISTRY" ]; then
@@ -54,7 +76,37 @@ mv -- /tmp/todolistapp-springboot-$CURRENTTIME.yaml todolistapp-springboot-$CURR
 sed -e "s|%UI_USERNAME%|${UI_USERNAME}|g" todolistapp-springboot-${CURRENTTIME}.yaml > /tmp/todolistapp-springboot-$CURRENTTIME.yaml
 mv -- /tmp/todolistapp-springboot-$CURRENTTIME.yaml todolistapp-springboot-$CURRENTTIME.yaml
 if [ -z "$1" ]; then
-    kubectl apply -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml -n mtdrworkshop
+    kubectl apply -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml -n "$NAMESPACE"
 else
-    kubectl apply -f <(istioctl kube-inject -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml) -n mtdrworkshop
+    kubectl apply -f <(istioctl kube-inject -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml) -n "$NAMESPACE"
 fi
+
+echo "Waiting two minutes before updating frontend API endpoint"
+sleep 120
+
+SERVICE_NAME=$(find_backend_load_balancer_service)
+if [ -z "$SERVICE_NAME" ]; then
+    echo "Error: could not find a LoadBalancer service for app $SERVICE_SELECTOR_APP"
+    exit 1
+fi
+
+echo "Using service $SERVICE_NAME to update frontend API endpoint"
+SERVICE_EXTERNAL_API=$(kubectl get service "$SERVICE_NAME" -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+if [ -z "$SERVICE_EXTERNAL_API" ]; then
+    SERVICE_EXTERNAL_API=$(kubectl get service "$SERVICE_NAME" -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+fi
+
+if [ -z "$SERVICE_EXTERNAL_API" ]; then
+    echo "Error: could not get external API for service $SERVICE_NAME"
+    exit 1
+fi
+
+API_LIST_URL="http://${SERVICE_EXTERNAL_API}/api"
+
+if [ ! -f "$FRONTEND_API_FILE" ]; then
+    echo "Error: frontend API file not found at $FRONTEND_API_FILE"
+    exit 1
+fi
+
+sed -i "s|^const API_LIST = .*|const API_LIST = '${API_LIST_URL}';|" "$FRONTEND_API_FILE"
+echo "Updated $FRONTEND_API_FILE with $API_LIST_URL"

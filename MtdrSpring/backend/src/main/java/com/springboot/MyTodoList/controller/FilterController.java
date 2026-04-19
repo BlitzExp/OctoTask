@@ -45,4 +45,15 @@ public class FilterController {
                     .body(Map.of("status", "error", "message", ex.getMessage()));
         }
     }
+
+    @GetMapping("/team-members/{teamId}")
+    public ResponseEntity<?> getTeamMembers(@PathVariable Long teamId) {
+        try {
+            var teamMembers = filterService.getTeamMembersByTeamId(teamId);
+            return ResponseEntity.ok(teamMembers);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
 }

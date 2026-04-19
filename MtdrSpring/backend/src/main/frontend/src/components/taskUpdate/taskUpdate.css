@@ -1,4 +1,4 @@
-.modal-overlay {
+.tu-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,7 +11,7 @@
     z-index: 1000;
   }
   
-  .modal-content {
+  .tu-modal-content {
 
     background-color: rgba(68, 68, 68, 0.8) ;
     width: 60%;
@@ -23,7 +23,7 @@
     flex-direction: column;
   }
 
-  .modal-header {
+  .tu-modal-header {
     font-size: 1.5em;
     font-weight: bold;
     padding-left: 20px;
@@ -34,7 +34,7 @@
     width:15%;
   }
 
-  .modal-header-container {
+  .tu-modal-header-container {
     display: flex;
     background-color: rgb(44, 44, 44) ;
     border-radius: 35px 35px 0 0;
@@ -44,7 +44,7 @@
     align-items: center;
   }
 
-  .modal-header-input {
+  .tu-modal-header-input {
     padding-left: 0px !important;
     border: none;
     border-radius: 4px;
@@ -59,7 +59,7 @@
     
   }
 
-  .modal-actions
+  .tu-modal-actions
   {
     display: flex;
     gap: 10px;
@@ -70,7 +70,7 @@
     height: 100%;
   }
 
-  .btn-save
+  .tu-btn-save
   {
       border-radius: 2em;
       border: 1px solid transparent;
@@ -98,14 +98,14 @@
       height: 45%;
   }
 
-  .btn-save:hover
+  .tu-btn-save:hover
   {
     background:
           linear-gradient(100deg, #3e2a99 0%, #533faf 100%) padding-box,
           linear-gradient(#FFFFFF, #FFFFFF) border-box;
   }
 
-  .btn-close
+  .tu-btn-close
   {
       border-radius: 2em;
       border: 1px solid transparent;
@@ -133,7 +133,7 @@
       height: 45%;
   }
 
-  .btn-close:hover
+  .tu-btn-close:hover
   {
     background:
           linear-gradient(100deg, #b23a5b 0%, #db3d52 100%) padding-box,
@@ -546,4 +546,22 @@
     border: 1px solid #555;
     background-color: #333;
     color: #fff;
+  }
+
+  .modal-task-info-task-col-general-select {
+    background-color: #222;
+    border: 1px solid #555;
+    border: none;
+    color: #fff;
+    font-size: 1em;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    align-self: center;
+    overflow-x: auto;
+    box-sizing: border-box;
+    font-family: sans-serif;
+    position: relative;
+    bottom: 3%;
+
   }

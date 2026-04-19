@@ -1,85 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import { FaUser } from "react-icons/fa";
-
+import {getAllSprintsController, getTeamMatesController} from "../../controller/filterController";
 import {getTimeUntilDue} from "../../controller/operationsController";
-import './TaskModal.css';
+import './taskUpdate.css';
 
-const TaskModal = ({ task, onClose, onSave }) => {
+const TaskUpdate = ({ teamId, task, onClose, onSave }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [stateId, setStateId] = useState('');
   const [assignedUserId, setAssignedUserId] = useState('');
   const [priorityId, setPriorityId] = useState('');
-  const [sprintNumber, setSprintNumber] = useState('');
+  const [sprintId, setSprintId] = useState('');
   const [estimatedHours, setEstimatedHours] = useState('');
   const [teamMembers, setTeamMembers] = useState([]);
   const [states, setStates] = useState([]);
   const [spentHours, setSpentHours] = useState('');
 
+
+  const [sprints, setSprints] = useState([]);
+
   useEffect(() => {
     if (task) {
       setName(task.name || '');
       setDescription(task.description || '');
-      setStateId(task.stateId || '');
-      setAssignedUserId(task.userId || '');
-      setPriorityId(task.priorityId || '');
-      setSprintNumber(task.sprintNumber || '');
-      setEstimatedHours(task.cost || '');
-      setSpentHours(task.spentHours || '');
+      setStateId(task.stateId ?? '');
+      setAssignedUserId(task.userId ?? '');
+      setPriorityId(task.priorityId ?? '');
+      setSprintId(task.sprintId ?? '');
+      setEstimatedHours(task.cost ?? '');
+      setSpentHours(task.spentHours ?? '');
     }
 
-    // Mock team members, including the currently assigned user if not in the list
-    const mockTeam = [
-      { id: 1, name: 'Alice' },
-      { id: 2, name: 'Bob' },
-      { id: 3, name: 'Charlie' },
-    ];
 
-    if (task && task.userId && !mockTeam.some(member => member.id === task.userId)) {
-        mockTeam.push({ id: task.userId, name: task.userName });
-    }
+    getTeamMatesController(teamId)
+      .then((data) => setTeamMembers(data))
+      .catch((error) => {
+        console.error("Error fetching team members:", error);
+      });
 
-    setTeamMembers(mockTeam);
+    getAllSprintsController(teamId)
+      .then((data) => setSprints(data))
+      .catch((error) => {
+        console.error("Error fetching sprints:", error);
+      });
+    
+    
 
     const mockStates = [
-        { id: 1, name: 'Done' },
-        { id: 2, name: 'Pending' },
-        { id: 3, name: 'On Going' },
-        { id: 4, name: 'Late' },
+        { id: 1, name: 'DONE' },
+        { id: 2, name: 'PENDING' },
+        { id: 3, name: 'ON GOING' },
+        { id: 4, name: 'LATE' },
     ];
     setStates(mockStates);
     
   }, [task]);
 
   const handleSave = () => {
-    if (stateId === 1 )
-      {
-        onSave({
-          ...task,
-          name,
-          description,
-          stateId,
-          userId: assignedUserId,
-          userName: teamMembers.find(member => member.id === assignedUserId)?.name || '',
-          priorityId,
-          sprintNumber,
-          cost: estimatedHours,
-          spentHours: spentHours
+    if (stateId === 1) {
+      onSave({
+        ...task,
+        name,
+        description,
+        stateId,
+        userId: assignedUserId,
+        userName:
+          teamMembers.find((member) => member.id === assignedUserId)?.name ||
+          '',
+        priorityId,
+        sprintId,
+        cost: estimatedHours,
+        spentHours: spentHours,
+      });
+      return;
+    }
 
-        });
-      }
     onSave({
       ...task,
       name,
       description,
       stateId,
       userId: assignedUserId,
-      userName: teamMembers.find(member => member.id === assignedUserId)?.name || '',
+      userName:
+        teamMembers.find((member) => member.id === assignedUserId)?.name || '',
       priorityId,
-      sprintNumber,
+      sprintId,
       cost: estimatedHours,
-      spentHours: null
-
+      spentHours: null,
     });
   };
 
@@ -101,22 +108,22 @@ const TaskModal = ({ task, onClose, onSave }) => {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="tu-modal-overlay" onClick={onClose}>
+      <div className="tu-modal-content" onClick={(e) => e.stopPropagation()}>
 
-        <div className='modal-header-container'>
-          <div className='modal-header'>Edit Task: </div>
+        <div className='tu-modal-header-container'>
+          <div className='tu-modal-header'>Edit Task: </div>
           <input 
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className='modal-header-input'
+            className='tu-modal-header-input'
           />
-          <div className="modal-actions">
-            <button className="btn-save" onClick={handleSave}>
+          <div className="tu-modal-actions">
+            <button className="tu-btn-save" onClick={handleSave}>
             Save
             </button>
-            <button className="btn-close" onClick={onClose}>
+            <button className="tu-btn-close" onClick={onClose}>
               Cancel
             </button>
           </div>
@@ -131,7 +138,12 @@ const TaskModal = ({ task, onClose, onSave }) => {
               <div className="modal-task-info-task-row-person-name">
                 <FaUser className="modal-task-info-task-row-person-icon" />
                 <select className="modal-task-info-task-row-person-name" value={assignedUserId} onChange={(e) => setAssignedUserId(Number(e.target.value))}>
-                  {teamMembers.map(member => (
+                  <option value={assignedUserId} hidden>
+                    {teamMembers.find((m) => Number(m.id) === Number(assignedUserId))?.name || 'Selected user'}
+                  </option>
+                  {teamMembers
+                    .filter((member) => Number(member.id) !== Number(assignedUserId))
+                    .map((member) => (
                     <option key={member.id} value={member.id}>
                       {member.name}
                     </option>
@@ -156,12 +168,18 @@ const TaskModal = ({ task, onClose, onSave }) => {
               </div>
               <div className='modal-task-info-task-col-general'>
                 <div className='modal-task-info-task-col-general-text'>Sprint Number: </div>
-                <input 
-                  type="text"
-                  value={sprintNumber}
-                  onChange={(e) => setSprintNumber(e.target.value)}
-                  className='modal-task-info-task-col-general-input'
-                />
+                <select className="modal-task-info-task-col-general-select" value={sprintId} onChange={(e) => setSprintId(Number(e.target.value))}>
+                  <option value={sprintId} hidden>
+                    {sprints.find((s) => Number(s.id) === Number(sprintId))?.name || 'Selected sprint'}
+                  </option>
+                  {sprints
+                    .filter((sprint) => Number(sprint.id) !== Number(sprintId))
+                    .map((sprint) => (
+                    <option key={sprint.id} value={sprint.id}>
+                      {sprint.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className='modal-task-info-task-col-general'>
                 <div className='modal-task-info-task-col-general-text'>Estimated Hours: </div>
@@ -248,4 +266,4 @@ const TaskModal = ({ task, onClose, onSave }) => {
   );
 };
 
-export default TaskModal;
+export default TaskUpdate;

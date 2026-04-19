@@ -1,39 +1,72 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import './taskModal.css';
+import { createTask } from '../../controller/tasksViewController';
+import {getAllSprintsController, getTeamMatesController} from "../../controller/filterController";
+import { useEffect } from 'react';
 
-function TaskModal({ isOpen, onClose }) {
+
+import './taskForm.css';
+
+
+function TaskForm({ teamId, isOpen, onClose, updateTaskList }) {
   const [taskName, setTaskName] = useState('');
   const [description, setDescription] = useState('');
-  const [assignee, setAssignee] = useState('');
+  const [assigneeId, setAssigneeId] = useState('');
   const [priority, setPriority] = useState('');
   const [attachment, setAttachment] = useState('');
-  const [isVisible, setIsVisible] = useState(true);
+  const [ estimatedHours, setEstimatedHours] = useState('');
+  const [sprintId, setSprintId] = useState('');
 
-  const generatedId = "OCTO-104"; 
+  const [teamMembers, setTeamMembers] = useState([]);  
+  const [sprints, setSprints] = useState([]);
+
+  useEffect(() => {
+    try {
+      getTeamMatesController(teamId)
+        .then((data) => setTeamMembers(data));
+      getAllSprintsController(teamId)
+        .then((data) => setSprints(data));
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+    }
+  }, [teamId]);
+
   const creationDate = new Date().toLocaleDateString('en-GB');
 
   if (!isOpen) return null;
 
-  function handleSubmit(e) {
+
+
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const newTaskData = {
-      id: generatedId,
+      assigneeId,
       name: taskName,
       description,
-      assignee,
+      sprintId,
       priority,
       attachment,
-      isVisible,
-      date: creationDate
+      estimatedHours
     };
     
     console.log("Submitting new task to DB:", newTaskData);
-    
-    setTaskName('');
-    setDescription('');
-    onClose();
+
+    try {
+      const newTask = await createTask(newTaskData);
+      setTaskName('');
+      setDescription('');
+      setEstimatedHours('');
+      setAssigneeId('');
+      setSprintId('');
+      onClose();
+
+      if (typeof updateTaskList === 'function') {
+        updateTaskList(newTask);
+      }
+    } catch (error) {
+      console.error("Error creating task:", error);
+    }
   }
 
   return ReactDOM.createPortal(
@@ -41,7 +74,7 @@ function TaskModal({ isOpen, onClose }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         
         <div className="modal-header">
-          <span className="task-id">New Task: {generatedId}</span>
+          <span className="task-id">Create New Task</span>
           <button className="close-button" onClick={onClose}>✕</button>
         </div>
 
@@ -94,16 +127,33 @@ function TaskModal({ isOpen, onClose }) {
               <label className="modal-label">Assignee</label>
               <select 
                 className="modal-input modal-select" 
-                value={assignee}
-                onChange={(e) => setAssignee(e.target.value)}
+                value={assigneeId}
+                onChange={(e) => setAssigneeId(e.target.value)}
                 required
               >
                 <option value="" disabled hidden>Select user...</option>
-                <option value="diego">Diego Navarro</option>
-                <option value="edgar">Edgar Navarro</option>
-                <option value="eloy">Eloy Rodriguez</option>
-                <option value="jdd">Juan de Dios</option>
-                <option value="najera">Jose Najera</option>
+                {teamMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="modal-label">Sprint</label>
+              <select 
+                className="modal-input modal-select"
+                value={sprintId}
+                onChange={(e) => setSprintId(e.target.value)}
+                required
+              >
+                <option value="" disabled hidden>Select sprint...</option>
+                {sprints.map((sprint) => (
+                  <option key={sprint.id} value={sprint.id}>
+                    {sprint.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -116,25 +166,23 @@ function TaskModal({ isOpen, onClose }) {
                 required
               >
                 <option value="" disabled hidden>Set priority...</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
+                <option value="1">Low</option>
+                <option value="2">Medium</option>
+                <option value="3">High</option>
               </select>
             </div>
 
-            <div className="form-group checkbox-group">
-              <label className="checkbox-container">
-                <input 
-                  type="checkbox" 
-                  checked={isVisible}
-                  onChange={(e) => setIsVisible(e.target.checked)}
-                />
-                <span className="checkmark"></span>
-                Task is visible to team
-              </label>
-            </div>
 
+              <div className="form-group">
+                <label className="modal-label">Estimated Hours</label>
+                <input 
+                  type="number" 
+                  className="modal-input" 
+                  placeholder="e.g. 4" 
+                  value={estimatedHours}
+                  onChange={(e) => setEstimatedHours(e.target.value)}
+                />
+              </div>
             <div className="sidebar-footer">
               <button type="submit" className="modal-submit-btn">Create Task</button>
             </div>
@@ -148,4 +196,4 @@ function TaskModal({ isOpen, onClose }) {
   );
 }
 
-export default TaskModal;
+export default TaskForm;

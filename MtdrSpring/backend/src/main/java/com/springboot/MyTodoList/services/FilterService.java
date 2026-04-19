@@ -17,5 +17,10 @@ public class FilterService {
         return jdbcTemplate.queryForList(sql, teamId);
     }
 
+    public Object getTeamMembersByTeamId(Long teamId) {
+        String sql = "SELECT ID AS \"id\", NAME AS \"name\" FROM APP_USER WHERE TEAM_ID = ?";
+        return jdbcTemplate.queryForList(sql, teamId);
+    }
+
     
 }

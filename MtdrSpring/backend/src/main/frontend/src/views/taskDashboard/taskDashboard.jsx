@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import TaskCard from '../../components/task/taskCard';
-import TaskModal from '../../components/task/TaskModal';
+import TaskUpdate from '../../components/taskUpdate/taskUpdate';
 import { getAllTasks, fetchTeamTasksCon } from '../../controller/tasksViewController';
 import './taskDashboard.css';
-import TaskModal from '../taskModal/taskModal';
+import TaskForm from '../../components/taskForm/taskForm';
 
 function TaskDashboard({ user }) {
   const [tasks, setTasks] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
   const [activeFilter, setActiveFilter] = useState('all');
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   function handleFilterClick(filter) {
     setActiveFilter(filter);
@@ -20,11 +19,11 @@ function TaskDashboard({ user }) {
 
   const handleCardClick = (task) => {
     setSelectedTask(task);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
     setSelectedTask(null);
   };
 
@@ -33,7 +32,7 @@ function TaskDashboard({ user }) {
       task.id === updatedTask.id ? updatedTask : task
     );
     setTasks(updatedTasks);
-    handleCloseModal();
+    handleCloseEditModal();
   };
 
   useEffect(() => {
@@ -60,7 +59,7 @@ function TaskDashboard({ user }) {
   return (
     <main className="task-dashboard-container">
       <h1 className="task-title">Task Dashboard</h1>
-      <button className="create-task-button" onClick={() => setIsModalOpen(true)}>+ Create Task</button>
+      <button className="create-task-button" onClick={() => setIsCreateModalOpen(true)}>+ Create Task</button>
       <nav className="task-filter-bar">
         <ul className="task-filter-list">
           <li className={`task-filter-item${activeFilter === 'all' ? ' active' : ''}`} onClick={() => handleFilterClick('all')}>
@@ -132,9 +131,29 @@ function TaskDashboard({ user }) {
         )}
       </div>
 
-      <TaskModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+      {isEditModalOpen && (
+        <TaskUpdate
+          teamId={user.teamId}
+          task={selectedTask}
+          onClose={handleCloseEditModal}
+          onSave={handleSaveTask}
+        />
+      )}
+
+      <TaskForm
+        teamId={user.teamId}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        updateTaskList={(newTask) => {
+          // Refetch tasks after creating a new one
+          if (user.role === 'admin') {
+            setTasks(prevTasks => [...prevTasks, newTask]);
+          }else{
+            if (newTask.assigneeId === user.id) {
+              setTasks(prevTasks => [...prevTasks, newTask]);
+            }
+          }
+        }}
         taskTitle="Create New Task"
       />
     </main>

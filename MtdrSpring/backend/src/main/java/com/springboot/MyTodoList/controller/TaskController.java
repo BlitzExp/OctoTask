@@ -1,24 +1,17 @@
 package com.springboot.MyTodoList.controller;
 
-import org.hibernate.annotations.Fetch;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.springboot.MyTodoList.model.CreateTask;
 import com.springboot.MyTodoList.services.TaskService;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CrossOrigin;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Map;
 
 @RestController
@@ -31,6 +24,25 @@ public class TaskController {
         this.taskService = taskService;
     }
 
+    private static String rootCauseMessage(Throwable throwable) {
+        if (throwable == null)
+            return "Unknown error";
+        Throwable current = throwable;
+        String bestMessage = null;
+
+        while (current != null) {
+            String msg = current.getMessage();
+            if (msg != null && !msg.isBlank()) {
+                bestMessage = msg;
+            }
+            current = current.getCause();
+        }
+
+        if (bestMessage != null)
+            return bestMessage;
+        return throwable.getClass().getSimpleName();
+    }
+
     @GetMapping("/team/{teamId}")
     public ResponseEntity<?> getTeamTasks(@PathVariable int teamId) {
         try {
@@ -38,7 +50,10 @@ public class TaskController {
             return ResponseEntity.ok(tasks);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("status", "error", "message", ex.getMessage()));
+                    .body(Map.of(
+                            "status", "error",
+                            "error", ex.getClass().getSimpleName(),
+                            "message", rootCauseMessage(ex)));
         }
     }
 
@@ -49,7 +64,24 @@ public class TaskController {
             return ResponseEntity.ok(tasks);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("status", "error", "message", ex.getMessage()));
+                    .body(Map.of(
+                            "status", "error",
+                            "error", ex.getClass().getSimpleName(),
+                            "message", rootCauseMessage(ex)));
+        }
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createNewTask(@RequestBody CreateTask taskData) {
+        try {
+            var createdTask = taskService.createTask(taskData);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "status", "error",
+                            "error", ex.getClass().getSimpleName(),
+                            "message", rootCauseMessage(ex)));
         }
     }
 }

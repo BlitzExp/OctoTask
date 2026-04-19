@@ -15,7 +15,8 @@ public class TaskRowMapper implements RowMapper<Task> {
         task.setDescription(rs.getString("DESCRIPTION"));
         task.setUserID(rs.getInt("USER_ID"));
         task.setUserName(rs.getString("userName"));
-        task.setSprintID(rs.getInt("sprintNumber"));
+        task.setSprintID(rs.getInt("SPRINT_ID"));
+        task.setSprintNumber(rs.getInt("sprintNumber"));
         task.setStateID(rs.getInt("STATE_ID"));
         task.setPriorityID(rs.getInt("PRIORITY_ID"));
         task.setLinkToFile(rs.getString("LINK_TO_FILE"));

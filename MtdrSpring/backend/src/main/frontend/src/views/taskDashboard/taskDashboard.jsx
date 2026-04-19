@@ -3,6 +3,7 @@ import TaskCard from '../../components/task/taskCard';
 import TaskModal from '../../components/task/TaskModal';
 import { getAllTasks, fetchTeamTasksCon } from '../../controller/tasksViewController';
 import './taskDashboard.css';
+import TaskModal from '../taskModal/taskModal';
 
 function TaskDashboard({ user }) {
   const [tasks, setTasks] = useState([]);
@@ -11,7 +12,7 @@ function TaskDashboard({ user }) {
 
   const [activeFilter, setActiveFilter] = useState('all');
 
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   function handleFilterClick(filter) {
     setActiveFilter(filter);
@@ -59,6 +60,7 @@ function TaskDashboard({ user }) {
   return (
     <main className="task-dashboard-container">
       <h1 className="task-title">Task Dashboard</h1>
+      <button className="create-task-button" onClick={() => setIsModalOpen(true)}>+ Create Task</button>
       <nav className="task-filter-bar">
         <ul className="task-filter-list">
           <li className={`task-filter-item${activeFilter === 'all' ? ' active' : ''}`} onClick={() => handleFilterClick('all')}>
@@ -129,13 +131,12 @@ function TaskDashboard({ user }) {
           </div>
         )}
       </div>
-      {isModalOpen && (
-        <TaskModal
-          task={selectedTask}
-          onClose={handleCloseModal}
-          onSave={handleSaveTask}
-        />
-      )}
+
+      <TaskModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        taskTitle="Create New Task"
+      />
     </main>
   );
 }

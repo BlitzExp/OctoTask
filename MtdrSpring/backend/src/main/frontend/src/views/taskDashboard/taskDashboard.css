@@ -164,3 +164,22 @@
     border-top-left-radius: 25px;
     border-top-right-radius: 25px;
 }
+
+.create-task-button {
+    display: block;
+    width: 150px;
+    padding: 9px;
+    margin: -55px 55px 0px auto; 
+    border-radius: 30px;
+    background-color: #7B5CFF;
+    border: 1px solid transparent;
+    background:
+        linear-gradient(100deg, #7B5CFF 0%, #5A3DDB 100%) padding-box,
+        linear-gradient(#FFFFFF, #FFFFFF) border-box;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}

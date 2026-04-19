@@ -10,7 +10,7 @@ export async function fetchTeamTasksCon(teamId) {
     return tasks.map(
       (taskData) =>
         new Task({
-          id: taskData.id,
+          id: taskData.id ?? taskData.ID,
           userId: taskData.userID ?? taskData.userId,
           userName: taskData.userName ?? taskData.username,
           name: taskData.name,
@@ -40,7 +40,7 @@ export const getAllTasks = async (userId) => {
     const taskInstances = tasks.map(
       (taskData) =>
         new Task({
-          id: taskData.id,
+          id: taskData.id ?? taskData.ID,
           userId: taskData.userID ?? taskData.userId,
           userName: taskData.userName ?? taskData.username,
           name: taskData.name,
@@ -65,13 +65,13 @@ export const getAllTasks = async (userId) => {
   }
 };
 
-export async function createTask(taskData) {
+export async function createTaskController(taskData) {
   try {
     // devuelve el id de la tarea creada
     const createdTask = await tasksService.createTask(taskData);
 
     const taskInstance = new Task({
-      id: createdTask.id,
+      id: createdTask.id ?? createdTask.ID,
       userId: createdTask.userID ?? createdTask.userId,
       userName: createdTask.userName ?? createdTask.username,
       name: createdTask.name,
@@ -93,6 +93,35 @@ export async function createTask(taskData) {
     return taskInstance;
   } catch (error) {
     console.error("Error creating task:", error);
+    throw error;
+  }
+}
+
+export function updateTaskController(taskId, taskData) {
+  try {
+    const updatedTask = tasksService.updateTask(taskId, taskData);
+    return updatedTask.then((updatedTaskData) => {
+      return new Task({
+        id: updatedTaskData.id ?? updatedTaskData.ID,
+        userId: updatedTaskData.userID ?? updatedTaskData.userId,
+        userName: updatedTaskData.userName ?? updatedTaskData.username,
+        name: updatedTaskData.name,
+        description: updatedTaskData.description,
+        sprintId: updatedTaskData.sprintID ?? updatedTaskData.sprintId,
+        sprintNumber: updatedTaskData.sprintNumber,
+        sprintEndDate: updatedTaskData.sprintEndDate,
+        stateId: updatedTaskData.stateID ?? updatedTaskData.stateId,
+        priorityId: updatedTaskData.priorityID ?? updatedTaskData.priorityId,
+        linkToFile: updatedTaskData.linkToFile,
+        createdAt: updatedTaskData.createdAt,
+        updatedAt: updatedTaskData.updatedAt,
+        cost: updatedTaskData.cost,
+        spentHours: updatedTaskData.spentHours,
+        visibility: updatedTaskData.visibility,
+      });
+    });
+  } catch (error) {
+    console.error("Error updating task:", error);
     throw error;
   }
 }

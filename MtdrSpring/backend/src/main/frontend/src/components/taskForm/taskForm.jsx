@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import { createTask } from '../../controller/tasksViewController';
+import { createTaskController } from '../../controller/tasksViewController';
 import {getAllSprintsController, getTeamMatesController} from "../../controller/filterController";
 import { useEffect } from 'react';
 
@@ -53,7 +53,7 @@ function TaskForm({ teamId, isOpen, onClose, updateTaskList }) {
     console.log("Submitting new task to DB:", newTaskData);
 
     try {
-      const newTask = await createTask(newTaskData);
+      const newTask = await createTaskController(newTaskData);
       setTaskName('');
       setDescription('');
       setEstimatedHours('');

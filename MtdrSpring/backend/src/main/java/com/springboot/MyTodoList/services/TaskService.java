@@ -74,4 +74,15 @@ public class TaskService {
         return jdbcTemplate.queryForObject(sql, new TaskRowMapper(), taskId);
     }
 
+    public Task updateTask(int taskId, Task taskData) {
+        String sql = "UPDATE TASKS SET USER_ID = ?, NAME = ?, DESCRIPTION = ?, SPRINT_ID = ?, STATE_ID = ?, PRIORITY_ID = ?, LINK_TO_FILE = ?, UPDATED_AT = CURRENT_TIMESTAMP, COST = ?, SPENT_HOURS = ?, VISIBILITY = ? WHERE ID = ?";
+        int rowsAffected = jdbcTemplate.update(sql, taskData.getUserID(), taskData.getName(),
+                taskData.getDescription(), taskData.getSprintID(), taskData.getStateID(), taskData.getPriorityID(),
+                taskData.getLinkToFile(), taskData.getCost(), taskData.getSpentHours(), taskData.getVisibility(), taskId);
+        if (rowsAffected == 0) {
+            throw new IllegalStateException("No task found with ID: " + taskId);
+        }
+        return getTaskById(taskId);
+    }
+
 }

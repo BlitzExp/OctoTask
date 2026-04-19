@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaUser } from "react-icons/fa";
 import {getAllSprintsController, getTeamMatesController} from "../../controller/filterController";
 import {getTimeUntilDue} from "../../controller/operationsController";
+import { updateTaskController } from '../../controller/tasksViewController';
 import './taskUpdate.css';
 
 const TaskUpdate = ({ teamId, task, onClose, onSave }) => {
@@ -56,38 +57,35 @@ const TaskUpdate = ({ teamId, task, onClose, onSave }) => {
     
   }, [task]);
 
-  const handleSave = () => {
-    if (stateId === 1) {
-      onSave({
-        ...task,
-        name,
-        description,
-        stateId,
-        userId: assignedUserId,
-        userName:
-          teamMembers.find((member) => member.id === assignedUserId)?.name ||
-          '',
-        priorityId,
-        sprintId,
-        cost: estimatedHours,
-        spentHours: spentHours,
-      });
-      return;
-    }
-
-    onSave({
-      ...task,
+  const handleSave = async () => {
+    const updatedTaskData = {
       name,
       description,
-      stateId,
-      userId: assignedUserId,
+      userID: assignedUserId,
       userName:
-        teamMembers.find((member) => member.id === assignedUserId)?.name || '',
-      priorityId,
-      sprintId,
+        teamMembers.find((member) => Number(member.id) === Number(assignedUserId))?.name ||
+        '',
+      sprintID: sprintId,
+      sprintNumber: sprints.find((s) => Number(s.id) === Number(sprintId))?.number || '',
+      sprintEndDate: sprints.find((s) => Number(s.id) === Number(sprintId))?.endDate || '',
+      stateID: stateId,
+      priorityID : priorityId,
+      linkToFile: task.linkToFile || '',
+      createdAt: task.createdAt || '',
+      updatedAt: new Date().toISOString(),
       cost: estimatedHours,
-      spentHours: null,
-    });
+      spentHours: spentHours,
+      visibility: task.visibility || 1
+    };
+
+    try {
+      const updatedTask = await updateTaskController(task.id, updatedTaskData);
+      if (typeof onSave === 'function') {
+        onSave(updatedTask);
+      }
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
   };
 
   const getPriorityClass = () => {

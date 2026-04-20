@@ -1,5 +1,27 @@
 #!/bin/bash
 SCRIPT_DIR=$(pwd)
+NAMESPACE="mtdrworkshop"
+DEFAULT_SERVICE_NAME="todolistapp-springboot-service"
+SERVICE_SELECTOR_APP="todolistapp-springboot"
+FRONTEND_API_FILE="$SCRIPT_DIR/src/main/frontend/src/API.js"
+
+find_backend_load_balancer_service() {
+    local discovered_service
+
+    discovered_service=$(kubectl get services -n "$NAMESPACE" -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.name}{"\t"}{.spec.selector.app}{"\n"}{end}' | awk -v app="$SERVICE_SELECTOR_APP" '$2 == app { print $1; exit }')
+
+    if [ -n "$discovered_service" ]; then
+        echo "$discovered_service"
+        return 0
+    fi
+
+    if kubectl get service "$DEFAULT_SERVICE_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
+        echo "$DEFAULT_SERVICE_NAME"
+        return 0
+    fi
+
+    return 1
+}
 
 #Validation
 if [ -z "$DOCKER_REGISTRY" ]; then
@@ -54,7 +76,7 @@ mv -- /tmp/todolistapp-springboot-$CURRENTTIME.yaml todolistapp-springboot-$CURR
 sed -e "s|%UI_USERNAME%|${UI_USERNAME}|g" todolistapp-springboot-${CURRENTTIME}.yaml > /tmp/todolistapp-springboot-$CURRENTTIME.yaml
 mv -- /tmp/todolistapp-springboot-$CURRENTTIME.yaml todolistapp-springboot-$CURRENTTIME.yaml
 if [ -z "$1" ]; then
-    kubectl apply -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml -n mtdrworkshop
+    kubectl apply -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml -n "$NAMESPACE"
 else
-    kubectl apply -f <(istioctl kube-inject -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml) -n mtdrworkshop
+    kubectl apply -f <(istioctl kube-inject -f $SCRIPT_DIR/todolistapp-springboot-$CURRENTTIME.yaml) -n "$NAMESPACE"
 fi

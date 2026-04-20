@@ -6,11 +6,12 @@ import LoginView from './LoginView';
 import { setUpUserEvent } from '../../testUtils/setUpUserEvent';
 
 vi.mock('../../API', () => ({
-  default: 'http://localhost/api',
+  default: 'http://localhost:8080/api',
 }));
 
+// Mocking HTTP requests with Mock Service Worker
 const server = setupServer(
-  rest.post('http://localhost/api/users/Login', async (req, res, ctx) => {
+  rest.post('http://localhost:8080/api/users/Login', async (req, res, ctx) => {
     const body = await req.json();
 
     if (body.username === 'worker' && body.password === 'secret') {
@@ -28,18 +29,24 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe('LoginView', () => {
+describe('LoginView Component', () => {
   test('submits happy-path login and calls onLogin with user payload', async () => {
-    const onLogin = vi.fn();
+    const onLogin = vi.fn(); // Mock function (fn)
     const onGoToRegister = vi.fn();
 
     const { user } = setUpUserEvent(
       <LoginView onLogin={onLogin} onGoToRegister={onGoToRegister} />,
     );
 
-    await user.type(screen.getByPlaceholderText(/username/i), 'worker');
-    await user.type(screen.getByPlaceholderText(/password/i), 'secret');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    // Strict HTMLElement typing from pattern
+    const usernameInput: HTMLElement = screen.getByPlaceholderText(/username/i);
+    const passwordInput: HTMLElement = screen.getByPlaceholderText(/password/i);
+    const submitButton: HTMLElement = screen.getByRole('button', { name: /sign in/i });
+
+    // Form Testing (user type events)
+    await user.type(usernameInput, 'worker');
+    await user.type(passwordInput, 'secret');
+    await user.click(submitButton);
 
     await waitFor(() => {
       expect(onLogin).toHaveBeenCalledWith({
@@ -53,15 +60,19 @@ describe('LoginView', () => {
 
   test('alerts when credentials are invalid', async () => {
     const onLogin = vi.fn();
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {}); // Mock function (spy)
 
     const { user } = setUpUserEvent(
       <LoginView onLogin={onLogin} onGoToRegister={vi.fn()} />,
     );
 
-    await user.type(screen.getByPlaceholderText(/username/i), 'worker');
-    await user.type(screen.getByPlaceholderText(/password/i), 'wrong');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    const usernameInput: HTMLElement = screen.getByPlaceholderText(/username/i);
+    const passwordInput: HTMLElement = screen.getByPlaceholderText(/password/i);
+    const submitButton: HTMLElement = screen.getByRole('button', { name: /sign in/i });
+
+    await user.type(usernameInput, 'worker');
+    await user.type(passwordInput, 'wrong');
+    await user.click(submitButton);
 
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalled();
@@ -78,7 +89,9 @@ describe('LoginView', () => {
       <LoginView onLogin={vi.fn()} onGoToRegister={onGoToRegister} />,
     );
 
-    await user.click(screen.getByText(/register/i));
+    const registerLink: HTMLElement = screen.getByText(/register/i);
+    await user.click(registerLink);
+    
     expect(onGoToRegister).toHaveBeenCalledWith('register');
   });
 });

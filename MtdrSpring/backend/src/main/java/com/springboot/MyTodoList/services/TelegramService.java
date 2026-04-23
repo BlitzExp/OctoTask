@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class TelegramService {
 
-    private final String BOT_TOKEN = "8438425753:AAEiLJV5sb8pH6Whrrcn0aoLB-N_bWcaDME"; 
+    private final String BOT_TOKEN = "TOKEN GOES HERE"; 
     private final String TELEGRAM_API_URL = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage";
     
     private final RestTemplate restTemplate;

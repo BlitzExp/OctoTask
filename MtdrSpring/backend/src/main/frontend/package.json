@@ -19,8 +19,8 @@
     "scripts": {
         "start": "react-scripts start",
         "build": "react-scripts build",
-        "test": "vitest run",
-        "test:watch": "vitest"
+        "test": "vitest run --no-update --silent",
+        "test:watch": "vitest --no-update --silent"
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^4.3.4",

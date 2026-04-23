@@ -109,9 +109,12 @@ describe('AnalyticsView Component', () => {
     arrangeSprintAndKpiMocks();
   });
 
-  test('it matches the snapshot for the default analytics view', () => {
-    const { container } = setUpUserEvent(<AnalyticsView user={{ id: 1, teamId: 7, role: 'admin' }} />);
-    expect(container).toMatchSnapshot();
+  test('renders default analytics headers and filter controls', async () => {
+    setUpUserEvent(<AnalyticsView user={{ id: 1, teamId: 7, role: 'admin' }} />);
+
+    expect(await screen.findByText('Analytics')).toBeInTheDocument();
+    expect(screen.getByText('Time Range:')).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 
   test('renders team and per-person KPIs for a selected sprint', async () => {

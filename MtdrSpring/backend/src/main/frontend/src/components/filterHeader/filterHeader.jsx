@@ -9,6 +9,7 @@ function FilterHeader({
 	filterCriteria,
 	onFilterChange,
 	sprintOptions,
+	assigneeOptions,
 }) {
 	return (
 		<div className="fh-container">
@@ -81,23 +82,29 @@ function FilterHeader({
 						</select>
 					</div>
 
-					<div className="fh-row fh-row-date-from">
-						<label htmlFor="fh-date-from-filter">Date from</label>
-						<input
-							id="fh-date-from-filter"
-							type="date"
-							value={filterCriteria.dateFrom}
-							onChange={(event) => onFilterChange('dateFrom', event.target.value)}
-						/>
+					<div className="fh-row">
+						<label htmlFor="fh-assignee-filter">Filter by assignee</label>
+						<select
+							id="fh-assignee-filter"
+							value={filterCriteria.assigneeId}
+							onChange={(event) => onFilterChange('assigneeId', event.target.value)}
+						>
+							{assigneeOptions.length > 1 && <option value="all">All</option>}
+							{assigneeOptions.map((assignee) => (
+								<option key={assignee.id} value={String(assignee.id)}>
+									{assignee.name}
+								</option>
+							))}
+						</select>
 					</div>
 
-					<div className="fh-row fh-row-date-to">
-						<label htmlFor="fh-date-to-filter">Date to</label>
+					<div className="fh-row">
+						<label htmlFor="fh-delivery-date-filter">Delivery Date</label>
 						<input
-							id="fh-date-to-filter"
+							id="fh-delivery-date-filter"
 							type="date"
-							value={filterCriteria.dateTo}
-							onChange={(event) => onFilterChange('dateTo', event.target.value)}
+							value={filterCriteria.deliveryDate}
+							onChange={(event) => onFilterChange('deliveryDate', event.target.value)}
 						/>
 					</div>
 				</section>

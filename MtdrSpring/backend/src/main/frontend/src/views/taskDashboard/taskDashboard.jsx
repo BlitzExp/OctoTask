@@ -2,28 +2,37 @@ import React, { useEffect, useState } from 'react';
 import TaskCard from '../../components/task/taskCard';
 import TaskUpdate from '../../components/taskUpdate/taskUpdate';
 import { getAllTasks, fetchTeamTasksCon } from '../../controller/tasksViewController';
-import { getAllSprintsController } from '../../controller/filterController';
+import { getAllSprintsController, getTeamMatesController } from '../../controller/filterController';
 import './taskDashboard.css';
 import TaskForm from '../../components/taskForm/taskForm';
 import FilterHeader from '../../components/filterHeader/filterHeader';
 
-const DEFAULT_FILTERS = {
+const DEFAULT_FILTERS_BASE = {
   titleQuery: '',
   status: 'all',
   priority: 'all',
   sprintId: 'all',
-  dateFrom: '',
-  dateTo: '',
+  assigneeId: 'all',
+  deliveryDate: '',
 };
+
+function getDefaultFilters(user) {
+  const isPrivileged = user?.role === 'admin' || user?.role === 'manager';
+  return {
+    ...DEFAULT_FILTERS_BASE,
+    assigneeId: isPrivileged ? 'all' : String(user?.id ?? 'all'),
+  };
+}
 
 function TaskDashboard({ user }) {
   const [tasks, setTasks] = useState([]);
   const [sprints, setSprints] = useState([]);
+  const [teamMates, setTeamMates] = useState([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [filterCriteria, setFilterCriteria] = useState(DEFAULT_FILTERS);
+  const [filterCriteria, setFilterCriteria] = useState(getDefaultFilters(user));
 
   const handleCardClick = (task) => {
     setSelectedTask(task);
@@ -65,6 +74,10 @@ function TaskDashboard({ user }) {
   }, [user]);
 
   useEffect(() => {
+    setFilterCriteria(getDefaultFilters(user));
+  }, [user]);
+
+  useEffect(() => {
     async function fetchSprints() {
       if (!user || !user.teamId) {
         return;
@@ -79,12 +92,27 @@ function TaskDashboard({ user }) {
     fetchSprints();
   }, [user]);
 
+  useEffect(() => {
+    async function fetchTeamMates() {
+      if (!user || !user.teamId) {
+        return;
+      }
+      try {
+        const teamData = await getTeamMatesController(user.teamId);
+        setTeamMates(teamData || []);
+      } catch (error) {
+        console.error('Error fetching team members for filter:', error);
+      }
+    }
+    fetchTeamMates();
+  }, [user]);
+
   function updateFilterField(field, value) {
     setFilterCriteria((prev) => ({ ...prev, [field]: value }));
   }
 
   function clearFilters() {
-    setFilterCriteria(DEFAULT_FILTERS);
+    setFilterCriteria(getDefaultFilters(user));
   }
 
   function getComparableDate(task) {
@@ -116,28 +144,31 @@ function TaskDashboard({ user }) {
     const matchesSprint =
       filterCriteria.sprintId === 'all' || String(task.sprintId) === filterCriteria.sprintId;
 
-    let matchesDate = true;
-    if (filterCriteria.dateFrom || filterCriteria.dateTo) {
+    const matchesAssignee =
+      filterCriteria.assigneeId === 'all' || String(task.userId) === filterCriteria.assigneeId;
+
+    let matchesDeliveryDate = true;
+    if (filterCriteria.deliveryDate) {
       const dateValue = getComparableDate(task);
       if (!dateValue) {
-        matchesDate = false;
+        matchesDeliveryDate = false;
       } else {
-        if (filterCriteria.dateFrom) {
-          const fromDate = new Date(`${filterCriteria.dateFrom}T00:00:00`);
-          if (dateValue < fromDate) {
-            matchesDate = false;
-          }
-        }
-        if (filterCriteria.dateTo) {
-          const toDate = new Date(`${filterCriteria.dateTo}T23:59:59`);
-          if (dateValue > toDate) {
-            matchesDate = false;
-          }
-        }
+        const selectedDate = new Date(`${filterCriteria.deliveryDate}T00:00:00`);
+        matchesDeliveryDate =
+          dateValue.getFullYear() === selectedDate.getFullYear() &&
+          dateValue.getMonth() === selectedDate.getMonth() &&
+          dateValue.getDate() === selectedDate.getDate();
       }
     }
 
-    return matchesTitle && matchesStatus && matchesPriority && matchesSprint && matchesDate;
+    return (
+      matchesTitle &&
+      matchesStatus &&
+      matchesPriority &&
+      matchesSprint &&
+      matchesAssignee &&
+      matchesDeliveryDate
+    );
   });
 
   const hasActiveFilters =
@@ -145,8 +176,8 @@ function TaskDashboard({ user }) {
     filterCriteria.status !== 'all' ||
     filterCriteria.priority !== 'all' ||
     filterCriteria.sprintId !== 'all' ||
-    filterCriteria.dateFrom !== '' ||
-    filterCriteria.dateTo !== '';
+    filterCriteria.assigneeId !== getDefaultFilters(user).assigneeId ||
+    filterCriteria.deliveryDate !== '';
 
   const sprintOptions =
     sprints.length > 0
@@ -165,6 +196,23 @@ function TaskDashboard({ user }) {
           ).values()
         );
 
+  const isPrivileged = user?.role === 'admin' || user?.role === 'manager';
+
+  const assigneeOptions = isPrivileged
+    ? (teamMates.length > 0
+        ? teamMates
+        : Array.from(
+            new Map(
+              tasks
+                .filter((task) => task.userId != null)
+                .map((task) => [
+                  String(task.userId),
+                  { id: task.userId, name: task.userName || `User ${task.userId}` },
+                ])
+            ).values()
+          ))
+    : [{ id: user?.id, name: user?.username || 'My tasks' }];
+
   return (
     <main className="task-dashboard-container">
       <h1 className="task-title">Task Dashboard</h1>
@@ -178,6 +226,7 @@ function TaskDashboard({ user }) {
           filterCriteria={filterCriteria}
           onFilterChange={updateFilterField}
           sprintOptions={sprintOptions}
+          assigneeOptions={assigneeOptions}
         />
       </div>
 

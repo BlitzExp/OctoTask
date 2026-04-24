@@ -41,7 +41,7 @@
 {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     color: white;
 }
 
@@ -55,6 +55,15 @@
     box-sizing: border-box;
 }
 
+.task-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 5% 0 auto;
+    width: fit-content;
+}
+
 .task-dashboard
 {
     display: flex;
@@ -64,7 +73,7 @@
     min-height: 0;
     flex: 1;
     padding-bottom: 3%;
-    padding-top: 3%;
+    padding-top: 1%;
     padding-left: 5%;
     padding-right: 5%;
 
@@ -166,10 +175,12 @@
 }
 
 .create-task-button {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 150px;
     padding: 9px;
-    margin: -55px 55px 0px auto; 
+    margin: 0;
     border-radius: 30px;
     background-color: #7B5CFF;
     border: 1px solid transparent;
@@ -248,4 +259,12 @@
     margin: 10px 5% 0;
     color: #d3d9e8;
     font-size: 14px;
+}
+
+@media (max-width: 900px) {
+    .task-actions-row {
+        width: 100%;
+        justify-content: space-between;
+        margin: 0;
+    }
 }

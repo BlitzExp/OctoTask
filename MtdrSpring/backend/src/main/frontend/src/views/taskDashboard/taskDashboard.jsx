@@ -5,6 +5,7 @@ import { getAllTasks, fetchTeamTasksCon } from '../../controller/tasksViewContro
 import { getAllSprintsController } from '../../controller/filterController';
 import './taskDashboard.css';
 import TaskForm from '../../components/taskForm/taskForm';
+import FilterHeader from '../../components/filterHeader/filterHeader';
 
 const DEFAULT_FILTERS = {
   titleQuery: '',
@@ -167,97 +168,18 @@ function TaskDashboard({ user }) {
   return (
     <main className="task-dashboard-container">
       <h1 className="task-title">Task Dashboard</h1>
-      <button className="create-task-button" onClick={() => setIsCreateModalOpen(true)}>+ Create Task</button>
-      <nav className="task-filter-button">
-        <button className="filter-button" onClick={() => setIsFilterOpen((prev) => !prev)}>
-          {isFilterOpen ? 'Hide Filters' : 'Filter'}
-        </button>
-        {hasActiveFilters && (
-          <button className="filter-clear-button" onClick={clearFilters}>
-            Clear
-          </button>
-        )}
-      </nav>
-
-      {isFilterOpen && (
-        <section className="task-filter-panel">
-          <div className="task-filter-row">
-            <label htmlFor="task-title-filter">Title contains</label>
-            <input
-              id="task-title-filter"
-              type="text"
-              value={filterCriteria.titleQuery}
-              onChange={(event) => updateFilterField('titleQuery', event.target.value)}
-              placeholder="search words in title"
-            />
-          </div>
-
-          <div className="task-filter-row">
-            <label htmlFor="task-status-filter">Status</label>
-            <select
-              id="task-status-filter"
-              value={filterCriteria.status}
-              onChange={(event) => updateFilterField('status', event.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="Late">Late</option>
-              <option value="Pending">Pending</option>
-              <option value="On Going">In Progress</option>
-              <option value="Done">Completed</option>
-            </select>
-          </div>
-
-          <div className="task-filter-row">
-            <label htmlFor="task-priority-filter">Difficulty</label>
-            <select
-              id="task-priority-filter"
-              value={filterCriteria.priority}
-              onChange={(event) => updateFilterField('priority', event.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="1">Low</option>
-              <option value="2">Medium</option>
-              <option value="3">High</option>
-            </select>
-          </div>
-
-          <div className="task-filter-row">
-            <label htmlFor="task-sprint-filter">Sprint</label>
-            <select
-              id="task-sprint-filter"
-              value={filterCriteria.sprintId}
-              onChange={(event) => updateFilterField('sprintId', event.target.value)}
-            >
-              <option value="all">All</option>
-              {sprintOptions.map((sprint) => (
-                <option key={sprint.id} value={String(sprint.id)}>
-                  {sprint.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="task-filter-row">
-            <label htmlFor="task-date-from-filter">Date from</label>
-            <input
-              id="task-date-from-filter"
-              type="date"
-              value={filterCriteria.dateFrom}
-              onChange={(event) => updateFilterField('dateFrom', event.target.value)}
-            />
-          </div>
-
-          <div className="task-filter-row">
-            <label htmlFor="task-date-to-filter">Date to</label>
-            <input
-              id="task-date-to-filter"
-              type="date"
-              value={filterCriteria.dateTo}
-              onChange={(event) => updateFilterField('dateTo', event.target.value)}
-            />
-          </div>
-        </section>
-      )}
+      <div className="task-actions-row">
+        <button className="create-task-button" onClick={() => setIsCreateModalOpen(true)}>+ Create Task</button>
+        <FilterHeader
+          isOpen={isFilterOpen}
+          onToggle={() => setIsFilterOpen((prev) => !prev)}
+          hasActiveFilters={hasActiveFilters}
+          onClear={clearFilters}
+          filterCriteria={filterCriteria}
+          onFilterChange={updateFilterField}
+          sprintOptions={sprintOptions}
+        />
+      </div>
 
       <p className="task-filter-summary">
         Showing {filteredTasks.length} of {tasks.length} tasks

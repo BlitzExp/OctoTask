@@ -7,24 +7,25 @@ function ensureOk(response) {
   return response;
 }
 
-export function checkDuplicates(username, email, password, role) {
-  return fetch(API_LIST + '/register/check', {
+export function checkDuplicates(username, email) {
+  return fetch(API_LIST + '/users/Check', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ username, email, password, role })
+    body: JSON.stringify({ username, email })
   }).then(ensureOk);
 }
 
 export function createUser(username, email, password, role) {
-  return fetch(API_LIST + '/register', {
+  return fetch(API_LIST + '/users/CreateUser', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ username, email, password, role })
-  }).then(ensureOk);
+  }).then(ensureOk)
+    .then((response) => response.json());
 }
 
 /* Example 

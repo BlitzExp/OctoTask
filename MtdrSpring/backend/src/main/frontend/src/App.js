@@ -32,21 +32,19 @@ import Notifications from "./views/notifications/notifications";
 function App() {
   const [isAuthenticated, setAuthenticated] = useState(false);
   const [currView, setCurrView] = useState("login");
+  const [user, setUser] = useState(null);
 
-  function handleLogin(username, password) {
-    if (username.trim() && password.trim()) {
-      setAuthenticated(true);
-      setCurrView("taskDashboard");
-      return true;
-    }
-    return false;
+  function handleUserAfter(userData) {
+    // Handle user data after registration
+    setUser(userData);
+    setAuthenticated(true);
+    setCurrView("taskDashboard");
+    console.log("Registered user data:", userData);
   }
 
   function handleNavigate(view) {
     setCurrView(view);
   }
-
-  
 
   if (!isAuthenticated) {
     return (
@@ -55,12 +53,12 @@ function App() {
         <Background isAuthenticated={isAuthenticated}>
           {currView === "register" ? (
             <RegisterView
-              onRegister={handleLogin}
+              onRegister={handleUserAfter}
               onBackToLogin={() => handleNavigate("login")}
             />
           ) : (
             <LoginView
-              onLogin={handleLogin}
+              onLogin={handleUserAfter}
               onGoToRegister={() => handleNavigate("register")}
             />
           )}
@@ -75,9 +73,9 @@ function App() {
         {currView === "home" ? (
           <h1>Home</h1>
         ) : currView === "taskDashboard" ? (
-          <TaskDashboard />
+          <TaskDashboard user={user} />
         ) : currView === "analytics" ? (
-          <AnalyticsView />
+          <AnalyticsView user={user} />
         ) : currView === "notifications" ? (
           <Notifications />
         ) : currView === "team" ? (
@@ -89,7 +87,7 @@ function App() {
             <h1>Profile</h1>
           </main>
         ) : (
-          <TaskDashboard />
+          <TaskDashboard user={user} />
         )}
       </SideMenu>
     </Background>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './RegisterView.css';
-import { checkDuplicates, createUser } from '../../services/RegisterService';
+import { registerUser } from '../../controller/registerController';
+
 import logo from '../../assets/logo.png';
 
 function RegisterView({ onRegister, onBackToLogin }) {
@@ -11,24 +12,26 @@ function RegisterView({ onRegister, onBackToLogin }) {
   const [role, setRole] = useState('');
   const [error, setError] = useState('');
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const success = checkDuplicates(username, email, password, role);
-    if (!success) {
-      setError('Nombre de usuario o correo electrónico ya registrados.');
-    } else {
-      const createUserSuccess = createUser(username, email, password, role);
-      if (!createUserSuccess) {
-        setError('Error al crear el usuario. Inténtalo de nuevo.');
-      } else {
-        onRegister(username, password);
+  async function handleSubmit(event) {
+    try {
+      event.preventDefault();
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
       }
+      const userData = await registerUser(username, email, password, role);
+      if (userData) {
+        onRegister(userData);
+      } else {
+        setError('Registration failed. Please try again.');
+      }
+    } catch (error) {
+      setError('An error occurred during registration. Please try again.');
     }
   }
 
   return (
-    <main>
-      <button onClick={onBackToLogin}>Volver al Login</button>
+    <div class="registerViewContainer">
       <div class="registerContainer">
         <form onSubmit={handleSubmit}>
 
@@ -108,7 +111,7 @@ function RegisterView({ onRegister, onBackToLogin }) {
           <span class="underlinedText" onClick={() => onBackToLogin('login')}> Log In </span>
         </form>
       </div>
-    </main>
+    </div>
   );
 }
 

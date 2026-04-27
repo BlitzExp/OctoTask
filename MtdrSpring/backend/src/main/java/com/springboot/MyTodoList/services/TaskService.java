@@ -32,6 +32,15 @@ public class TaskService {
         return jdbcTemplate.query(sql, new Object[] { userId }, new TaskRowMapper());
     }
 
+    public List<Task> getTasksByUserName(String userName) {
+        String sql = "SELECT t.*, u.name as userName, s.end_date as sprintEndDate, s.SPRINT_NUM as sprintNumber " +
+                     "FROM TASKS t " +
+                     "JOIN APP_USER u ON t.user_id = u.id " +
+                     "JOIN SPRINT s ON t.sprint_id = s.id " +
+                     "WHERE LOWER(u.name) = LOWER(?)";
+        return jdbcTemplate.query(sql, new Object[] { userName }, new TaskRowMapper());
+    }
+
     public Task createTask(CreateTask taskData) {
 
         int visibility = 1;

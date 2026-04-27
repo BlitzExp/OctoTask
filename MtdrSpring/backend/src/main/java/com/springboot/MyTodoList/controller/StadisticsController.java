@@ -189,4 +189,28 @@ public class StadisticsController {
         }
     }
 
+    @GetMapping("/completedtasks/bymember/sprints/{teamId}")
+    public ResponseEntity<Map<String, Object>> getCompletedTasksByMemberPerSprint(
+            @PathVariable String teamId) {
+        try {
+            var completed = stadisticsService.getCompletedTasksByMemberPerSprint(Integer.parseInt(teamId));
+            return ResponseEntity.ok(Map.of("completed_tasks_by_member_per_sprint", completed));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping("/workhours/bymember/sprints/{teamId}")
+    public ResponseEntity<Map<String, Object>> getWorkHoursByMemberPerSprint(
+            @PathVariable String teamId) {
+        try {
+            var hours = stadisticsService.getWorkHoursByMemberPerSprint(Integer.parseInt(teamId));
+            return ResponseEntity.ok(Map.of("work_hours_by_member_per_sprint", hours));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", ex.getMessage()));
+        }
+    }
+
 }

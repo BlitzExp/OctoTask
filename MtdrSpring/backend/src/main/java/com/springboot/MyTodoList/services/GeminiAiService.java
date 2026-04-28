@@ -99,7 +99,67 @@ public class GeminiAiService {
 
             // Tell Gemini these 5 fields are strictly required before it can execute the tool
             createTaskParams.putArray("required").add("name").add("description").add("assigneeId").add("sprintId").add("priority");
+            
+            // --- TOOL 6: Complete a Task ---
+            ObjectNode completeTaskFunction = functionDeclarations.addObject();
+            completeTaskFunction.put("name", "complete_task");
+            completeTaskFunction.put("description", "Marks a specific task as completed or DONE. Ask the user for the Task ID if they don't provide it.");
+            ObjectNode completeTaskParams = completeTaskFunction.putObject("parameters");
+            completeTaskParams.put("type", "OBJECT");
+            completeTaskParams.putObject("properties").putObject("taskId").put("type", "INTEGER").put("description", "The numeric ID of the task to complete");
+            completeTaskParams.putArray("required").add("taskId");
 
+            // --- TOOL 7: Get Pending Tasks ---
+            ObjectNode getPendingTasksFunction = functionDeclarations.addObject();
+            getPendingTasksFunction.put("name", "get_pending_tasks");
+            getPendingTasksFunction.put("description", "Fetches ONLY the pending or incomplete tasks for a specific user. Use this when the user asks what they need to do.");
+            ObjectNode getPendingParams = getPendingTasksFunction.putObject("parameters");
+            getPendingParams.put("type", "OBJECT");
+            getPendingParams.putObject("properties").putObject("userName").put("type", "STRING").put("description", "The name of the user");
+            getPendingParams.putArray("required").add("userName");
+
+            // --- TOOL 8: Get Top Priority Task ---
+            ObjectNode getPriorityFunction = functionDeclarations.addObject();
+            getPriorityFunction.put("name", "get_top_priority_task");
+            getPriorityFunction.put("description", "Recommends the single most important task the user should work on right now based on priority.");
+            ObjectNode getPriorityParams = getPriorityFunction.putObject("parameters");
+            getPriorityParams.put("type", "OBJECT");
+            getPriorityParams.putObject("properties").putObject("userName").put("type", "STRING").put("description", "The name of the user");
+            getPriorityParams.putArray("required").add("userName");
+
+            // --- TOOL 9: Get Overall Team KPIs ---
+            ObjectNode getKpisFunction = functionDeclarations.addObject();
+            getKpisFunction.put("name", "get_team_kpis");
+            getKpisFunction.put("description", "Fetches overall statistics, analytics, and KPIs for a specific team (total, completed, pending, late tasks, and averages).");
+            ObjectNode getKpisParams = getKpisFunction.putObject("parameters");
+            getKpisParams.put("type", "OBJECT");
+            getKpisParams.putObject("properties").putObject("teamId").put("type", "INTEGER").put("description", "The numeric ID of the team");
+            getKpisParams.putArray("required").add("teamId");
+
+            // --- TOOL 10: Get Sprint Analytics ---
+            ObjectNode getSprintAnalyticsFunction = functionDeclarations.addObject();
+            getSprintAnalyticsFunction.put("name", "get_sprint_analytics");
+            getSprintAnalyticsFunction.put("description", "Fetches deep analytics for a specific sprint, showing exactly how many hours each member worked and their completed/late tasks.");
+            ObjectNode getSprintParams = getSprintAnalyticsFunction.putObject("parameters");
+            getSprintParams.put("type", "OBJECT");
+            ObjectNode sprintProps = getSprintParams.putObject("properties");
+            sprintProps.putObject("teamId").put("type", "INTEGER").put("description", "The numeric ID of the team");
+            sprintProps.putObject("sprintId").put("type", "INTEGER").put("description", "The numeric ID of the sprint");
+            getSprintParams.putArray("required").add("teamId").add("sprintId");
+
+            // --- TOOL 11: Get User KPIs ---
+            ObjectNode getUserKpisFunction = functionDeclarations.addObject();
+            getUserKpisFunction.put("name", "get_user_kpis");
+            getUserKpisFunction.put("description", "Fetches personal statistics, analytics, and KPIs for a specific user (total tasks, completed tasks, pending tasks, and total hours spent) by their name.");
+            
+            ObjectNode getUserKpisParams = getUserKpisFunction.putObject("parameters");
+            getUserKpisParams.put("type", "OBJECT");
+            getUserKpisParams.putObject("properties").putObject("userName").put("type", "STRING").put("description", "The first name or full name of the user");
+            getUserKpisParams.putArray("required").add("userName");
+
+
+
+            
             // 2. Make the API Call to Google
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -140,9 +200,10 @@ public class GeminiAiService {
                 "Draft the exact, final text message to send back to the user. " +
                 "STRICT RULES: \n" +
                 "1. EXACT MATCH: You must use the EXACT task names, descriptions, and statuses exactly as they appear in the raw data. Do NOT reword, paraphrase, or summarize them.\n" +
-                "2. NO TRUNCATION: You must list EVERY SINGLE item provided in the raw data. If the database returns 32 items, you must list all 32. Do NOT stop at 10, do NOT say 'and more', do NOT skip any data.\n" +
-                "3. NO META-TEXT: Do not provide multiple options or explain your formatting.\n" +
-                "4. FORMATTING: Output ONLY the final response. Format it clearly using bullet points or numbers so it is easy to read on a mobile phone.";
+                "2. If the data is STATISTICS or KPIs, act like a data analyst. Format it beautifully with bullet points, and short, insightful summaries of the numbers.\n" +
+                "3. NO TRUNCATION: You must list EVERY SINGLE item provided in the raw data. If the database returns 32 items, you must list all 32. Do NOT stop at 10, do NOT say 'and more', do NOT skip any data.\n" +
+                "4. NO META-TEXT: Do not provide multiple options or explain your formatting.\n" +
+                "5. FORMATTING: Output ONLY the final response. Format it clearly using bullet points or numbers so it is easy to read on a mobile phone.";
                 
             ObjectNode requestBody = objectMapper.createObjectNode();
             requestBody.putArray("contents").addObject()

@@ -197,6 +197,20 @@ public class StadisticsService {
                 "total_work_hours", rs.getInt("total_work_hours")));
     }
 
+    // 4. Fetch User-Specific KPIs
+    public Map<String, Object> getUserKpisByUserName(String userName) {
+        String sql = "SELECT " +
+                     "COUNT(*) as total_tasks, " +
+                     "SUM(CASE WHEN t.state_id = 3 THEN 1 ELSE 0 END) as completed_tasks, " +
+                     "SUM(CASE WHEN t.state_id != 3 THEN 1 ELSE 0 END) as pending_tasks, " +
+                     "SUM(t.spent_hours) as total_hours_spent " +
+                     "FROM TASKS t " +
+                     "JOIN APP_USER u ON t.user_id = u.id " +
+                     "WHERE LOWER(u.name) = LOWER(?)";
+                     
+        return jdbcTemplate.queryForMap(sql, userName);
+    }
+
     // AVG hours per sprint by team
     public List<Map<String, Object>> getAverageWorkHoursPerSprint(int teamId) {
         String sql = "SELECT \r\n" + //

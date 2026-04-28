@@ -32,6 +32,43 @@ public class TaskService {
         return jdbcTemplate.query(sql, new Object[] { userId }, new TaskRowMapper());
     }
 
+    // 1. Fetch ONLY Pending Tasks
+    public List<Task> getPendingTasksByUserName(String userName) {
+        String sql = "SELECT t.*, u.name as userName, s.end_date as sprintEndDate, s.SPRINT_NUM as sprintNumber " +
+                     "FROM TASKS t " +
+                     "JOIN APP_USER u ON t.user_id = u.id " +
+                     "JOIN SPRINT s ON t.sprint_id = s.id " +
+                     "WHERE LOWER(u.name) = LOWER(?) AND t.state_id != 3"; 
+                     
+        return jdbcTemplate.query(sql, new Object[]{userName}, new TaskRowMapper());
+    }
+
+    // 2. Fetch the #1 Highest Priority Task
+    public Task getTopPriorityTask(String userName) {
+        // We order by Priority (1 = High) and then by Sprint End Date to find the most urgent task
+        String sql = "SELECT t.*, u.name as userName, s.end_date as sprintEndDate, s.SPRINT_NUM as sprintNumber " +
+                     "FROM TASKS t " +
+                     "JOIN APP_USER u ON t.user_id = u.id " +
+                     "JOIN SPRINT s ON t.sprint_id = s.id " +
+                     "WHERE LOWER(u.name) = LOWER(?) AND t.state_id != 3 " +
+                     "ORDER BY t.priority_id ASC, s.end_date ASC " +
+                     "FETCH FIRST 1 ROWS ONLY"; // Oracle's native LIMIT command
+                     
+        List<Task> tasks = jdbcTemplate.query(sql, new Object[]{userName}, new TaskRowMapper());
+        return tasks.isEmpty() ? null : tasks.get(0);
+    }
+
+    // 3. Mark a task as Done
+    public int markTaskCompleted(int taskId) {
+        String sql = "UPDATE TASKS SET state_id = 3 WHERE id = ?";
+        int rowsAffected = jdbcTemplate.update(sql, taskId);
+        
+        if (rowsAffected == 0) {
+            throw new RuntimeException("Could not find a task with ID " + taskId);
+        }
+        return rowsAffected;
+    }
+
     public List<Task> getTasksByUserName(String userName) {
         String sql = "SELECT t.*, u.name as userName, s.end_date as sprintEndDate, s.SPRINT_NUM as sprintNumber " +
                      "FROM TASKS t " +

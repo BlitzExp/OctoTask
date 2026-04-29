@@ -8,7 +8,7 @@ EXPOSE 8080
 COPY target/MyTodoList-0.0.1-SNAPSHOT.jar MyTodoList.jar
 
 ENV ui_username="admin"
-ENV ui_password="none0001"
+ENV ui_password="None0001"
 
 ENV db_user="octotask"
 ENV dbpassword="Juanddios_1234"

@@ -65,3 +65,21 @@ export function updateTask(taskId, taskData) {
     );
   });
 }
+
+export function deleteTask(taskId) {
+  return fetch(API_LIST + `/tasks/delete/${taskId}`, {
+    method: "PUT",
+  }).then(async (response) => {
+    if (response.ok) return;
+    let text = "";
+    try {
+      text = await response.text();
+    } catch {
+      // ignore
+    }
+    const details = text ? `: ${text}` : "";
+    throw new Error(
+      `Failed to delete task (HTTP ${response.status})${details}`,
+    );
+  });
+}

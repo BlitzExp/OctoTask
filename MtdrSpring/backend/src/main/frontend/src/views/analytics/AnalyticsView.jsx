@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MdCalendarMonth, MdInsertDriveFile } from 'react-icons/md';
 import './AnalyticsView.css';
 
@@ -6,15 +6,14 @@ import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { LabelList } from 'recharts';
 
-import { useEffect } from 'react';
-
 import { getAllSprintsController } from '../../controller/filterController';
 import { fetchNumTasksSprintController, fetchNumTasksAllController 
   , fetchNumCompletedTasksSprintController, fetchNumCompletedTasksAllController,
   fetchNumPendingTasksSprintController, fetchNumPendingTasksAllController,
   fetchNumLateTasksAllController, fetchNumLateTasksSprintController,
   fetchMembersStatus, fetchWorkHours, fetchAVGTasksPerMemberController,
-  fetchAVGHours, calculateKPI, calculateKPIAVG
+  fetchAVGHours, fetchCompletedTasksByMemberPerSprintController, calculateKPI, calculateKPIAVG,
+  fetchWorkHoursByMemberPerSprintController
 } from '../../controller/analyticsController';
 
 
@@ -33,8 +32,81 @@ function AnalyticsView({ user }) {
   const [avgTasksPerMember, setAvgTasksPerMember] = useState([]);
   const [avgHoursPerMember, setAvgHoursPerMember] = useState([]);
 
+  const [completedByMemberPerSprint, setCompletedByMemberPerSprint] = useState([]);
+  const [workHoursByMemberPerSprint, setWorkHoursByMemberPerSprint] = useState([]);
+
   const [kpiGrades, setKpiGrades] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
+
+  const completedPerSprintChart = useMemo(() => {
+    const rows = Array.isArray(completedByMemberPerSprint) ? completedByMemberPerSprint : [];
+    const membersSet = new Set();
+    const sprintOrder = [];
+    const bySprint = new Map();
+
+    for (const row of rows) {
+      const rawSprintName = row?.sprint_name;
+      const sprintName = rawSprintName != null ? String(rawSprintName).trim() : '';
+      const sprintId = row?.sprint_id;
+      let sprintLabel = sprintName;
+      if (!sprintLabel && sprintId != null) sprintLabel = String(sprintId);
+      if (sprintLabel && !/^sprint\s+/i.test(sprintLabel)) sprintLabel = `Sprint ${sprintLabel}`;
+      if (!sprintLabel) sprintLabel = 'Sprint';
+
+      const memberName = typeof row?.user_name === 'string' ? row.user_name.trim() : '';
+      if (!memberName) continue;
+
+      membersSet.add(memberName);
+
+      if (!bySprint.has(sprintLabel)) {
+        bySprint.set(sprintLabel, { sprint: sprintLabel });
+        sprintOrder.push(sprintLabel);
+      }
+
+      const sprintRow = bySprint.get(sprintLabel);
+      sprintRow[memberName] = Number(row?.completed_tasks) || 0;
+    }
+
+    return {
+      data: sprintOrder.map((key) => bySprint.get(key)),
+      members: Array.from(membersSet).sort((a, b) => a.localeCompare(b)),
+    };
+  }, [completedByMemberPerSprint]);
+
+  const workHoursPerSprintChart = useMemo(() => {
+    const rows = Array.isArray(workHoursByMemberPerSprint) ? workHoursByMemberPerSprint : [];
+    const membersSet = new Set();
+    const sprintOrder = [];
+    const bySprint = new Map();
+
+    for (const row of rows) {
+      const rawSprintName = row?.sprint_name;
+      const sprintName = rawSprintName != null ? String(rawSprintName).trim() : '';
+      const sprintId = row?.sprint_id;
+      let sprintLabel = sprintName;
+      if (!sprintLabel && sprintId != null) sprintLabel = String(sprintId);
+      if (sprintLabel && !/^sprint\s+/i.test(sprintLabel)) sprintLabel = `Sprint ${sprintLabel}`;
+      if (!sprintLabel) sprintLabel = 'Sprint';
+
+      const memberName = typeof row?.user_name === 'string' ? row.user_name.trim() : '';
+      if (!memberName) continue;
+
+      membersSet.add(memberName);
+
+      if (!bySprint.has(sprintLabel)) {
+        bySprint.set(sprintLabel, { sprint: sprintLabel });
+        sprintOrder.push(sprintLabel);
+      }
+
+      const sprintRow = bySprint.get(sprintLabel);
+      sprintRow[memberName] = Number(row?.total_work_hours) || 0;
+    }
+
+    return {
+      data: sprintOrder.map((key) => bySprint.get(key)),
+      members: Array.from(membersSet).sort((a, b) => a.localeCompare(b)),
+    };
+  }, [workHoursByMemberPerSprint]);
 
   useEffect(() => {
     async function fetchSprints() {
@@ -64,6 +136,9 @@ function AnalyticsView({ user }) {
         const avgTasksPerMember = await fetchAVGTasksPerMemberController(user.teamId);
         const avgHoursPerMember = await fetchAVGHours(user.teamId);
 
+        const completedByMemberPerSprint = await fetchCompletedTasksByMemberPerSprintController(user.teamId);
+        const workHoursByMemberPerSprint = await fetchWorkHoursByMemberPerSprintController(user.teamId);
+
          const kpiGrades = calculateKPIAVG(avgTasksPerMember, avgHoursPerMember);
 
 
@@ -77,6 +152,8 @@ function AnalyticsView({ user }) {
         setAvgTasksPerMember(avgTasksPerMember);
         setAvgHoursPerMember(avgHoursPerMember);
         setKpiGrades(kpiGrades);
+        setCompletedByMemberPerSprint(completedByMemberPerSprint);
+        setWorkHoursByMemberPerSprint(workHoursByMemberPerSprint);
       } else {
         const totalTasks = await fetchNumTasksSprintController(user.teamId, sprintId);
         const completedTasks = await fetchNumCompletedTasksSprintController(user.teamId, sprintId);
@@ -99,6 +176,8 @@ function AnalyticsView({ user }) {
         setMembersStatus(membersStatus);
         setWorkHours(workHours);
         setKpiGrades(kpiGrades);
+        setCompletedByMemberPerSprint([]);
+        setWorkHoursByMemberPerSprint([]);
       }
     } catch (error) {
       console.error('Error fetching data for sprint:', error);
@@ -176,7 +255,7 @@ function AnalyticsView({ user }) {
               </div>
             </div>
         </div>
-        <div className="analytics-charts-row">
+        <div className={`analytics-charts-row${selectedSprint === 'allsprints' ? ' analytics-charts-row-allsprints' : ''}`}>
           <div className="analytics-chart-grades">
             {selectedSprint !== 'allsprints' ? (
               <>
@@ -205,7 +284,6 @@ function AnalyticsView({ user }) {
                       dataKey="completedTasks"
                       fill="#7ed957"
                       name="Completed"
-                      maxBarSize={32}
                       radius={[8, 8, 0, 0]}
                     >
                       <LabelList dataKey="completedTasks" position="top" fill="#fff" fontSize={14} />
@@ -214,7 +292,6 @@ function AnalyticsView({ user }) {
                       dataKey="pendingTasks"
                       fill="#ff9800"
                       name="Pending"
-                      maxBarSize={32}
                       radius={[8, 8, 0, 0]}
                     >
                       <LabelList dataKey="pendingTasks" position="top" fill="#fff" fontSize={14} />
@@ -223,7 +300,6 @@ function AnalyticsView({ user }) {
                       dataKey="lateTasks"
                       fill="#c56261"
                       name="Late"
-                      maxBarSize={32}
                       radius={[8, 8, 0, 0]}
                     >
                       <LabelList dataKey="lateTasks" position="top" fill="#fff" fontSize={14} />
@@ -233,64 +309,52 @@ function AnalyticsView({ user }) {
               </>
             ) : (
               <>
-                <h2 className="analytics-chart-title">AVG Tasks per Sprint</h2>
+                <h2 className="analytics-chart-title">Tasks Completed by Developer per Sprint</h2>
                 <ResponsiveContainer width="100%" height="100%" minHeight={120}>
                   <BarChart
-                    data={avgTasksPerMember.map((user) => ({
-                      member: user.user_name,
-                      totalTasks: user.avg_total_tasks,
-                      completedTasks: user.avg_completed_tasks,
-                      pendingTasks: user.avg_pending_tasks,
-                      lateTasks: user.avg_late_tasks,
-                    }))}
+                    data={completedPerSprintChart.data}
                     margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                     barCategoryGap={10}
                     barGap={0}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="member" stroke="#fff" tick={{ fontSize: 14 }} />
-                    <YAxis stroke="#fff" allowDecimals={false} tick={{ fontSize: 14 }} />
+                    <XAxis
+                      dataKey="sprint"
+                      stroke="#fff"
+                      tick={{ fontSize: 14 }}
+                      label={{ value: 'Sprint Number', position: 'insideBottom', offset: -2, fill: '#fff' }}
+                    />
+                    <YAxis
+                      stroke="#fff"
+                      allowDecimals={false}
+                      tick={{ fontSize: 14 }}
+                      label={{
+                        value: 'Número de tareas completadas',
+                        angle: -90,
+                        position: 'insideLeft',
+                        fill: '#fff',
+                        style: { textAnchor: 'middle', fontFamily: 'inherit', fontSize: 14, fontWeight: 600 },
+                      }}
+                    />
                     <Tooltip
                       cursor={{ fill: '#444', opacity: 0.2 }}
                       contentStyle={{ background: '#222', border: 'none', color: '#fff' }}
                     />
                     <Legend wrapperStyle={{ color: '#fff' }} />
-                    <Bar
-                      dataKey="totalTasks"
-                      fill="#8884d8"
-                      name="Total Tasks"
-                      maxBarSize={32}
-                      radius={[8, 8, 0, 0]}
-                    >
-                      <LabelList dataKey="totalTasks" position="top" fill="#fff" fontSize={14} />
-                    </Bar>
-                    <Bar
-                      dataKey="completedTasks"
-                      fill="#7ed957"
-                      name="Completed"
-                      maxBarSize={32}
-                      radius={[8, 8, 0, 0]}
-                    >
-                      <LabelList dataKey="completedTasks" position="top" fill="#fff" fontSize={14} />
-                    </Bar>
-                    <Bar
-                      dataKey="pendingTasks"
-                      fill="#ff9800"
-                      name="Pending"
-                      maxBarSize={32}
-                      radius={[8, 8, 0, 0]}
-                    >
-                      <LabelList dataKey="pendingTasks" position="top" fill="#fff" fontSize={14} />
-                    </Bar>
-                    <Bar
-                      dataKey="lateTasks"
-                      fill="#c56261"
-                      name="Late"
-                      maxBarSize={32}
-                      radius={[8, 8, 0, 0]}
-                    >
-                      <LabelList dataKey="lateTasks" position="top" fill="#fff" fontSize={14} />
-                    </Bar>
+                    {(() => {
+                      const palette = ['#7ed957', '#ff9800', '#c56261', '#8884d8', '#795be6'];
+                      return completedPerSprintChart.members.map((member, idx) => (
+                        <Bar
+                          key={member}
+                          dataKey={member}
+                          fill={palette[idx % palette.length]}
+                          name={member}
+                          radius={[8, 8, 0, 0]}
+                        >
+                          <LabelList dataKey={member} position="top" fill="#fff" fontSize={14} />
+                        </Bar>
+                      ));
+                    })()}
                   </BarChart>
                 </ResponsiveContainer>
               </>
@@ -324,26 +388,50 @@ function AnalyticsView({ user }) {
               </>
             ) : (
               <>
-                <h2 className="analytics-chart-title">AVG Hours per Sprint</h2>
+                <h2 className="analytics-chart-title">Hours by Developer per Sprint</h2>
                 <ResponsiveContainer width="100%" height="90%">
-                  <BarChart 
-                    data={avgHoursPerMember.map((user) => ({
-                      member: user.user_name,
-                      avgHours: user.avg_hours_per_sprint,
-                    }))}
+                  <BarChart
+                    data={workHoursPerSprintChart.data}
                     margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                    barCategoryGap={10}
+                    barGap={0}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="member" stroke="#fff" />
-                    <YAxis stroke="#fff" />
+                    <XAxis
+                      dataKey="sprint"
+                      stroke="#fff"
+                      label={{ value: 'Sprint Number', position: 'insideBottom', offset: -2, fill: '#fff' }}
+                    />
+                    <YAxis
+                      stroke="#fff"
+                      allowDecimals={false}
+                      label={{
+                        value: 'Número de horas trabajadas',
+                        angle: -90,
+                        position: 'insideLeft',
+                        fill: '#fff',
+                        style: { textAnchor: 'middle', fontFamily: 'inherit', fontSize: 14, fontWeight: 600 },
+                      }}
+                    />
                     <Tooltip 
                       cursor={{ fill: '#444', opacity: 0.2 }} 
                       contentStyle={{ background: '#222', border: 'none', color: '#fff' }}
                     />
                     <Legend wrapperStyle={{ color: '#fff' }} />
-                    <Bar dataKey="avgHours" fill="#8884d8" name="Avg Hours" maxBarSize={40} radius={[8, 8, 0, 0]}>
-                      <LabelList dataKey="avgHours" position="top" fill="#fff" fontSize={14} />
-                    </Bar>
+                    {(() => {
+                      const palette = ['#7ed957', '#ff9800', '#c56261', '#8884d8', '#795be6'];
+                      return workHoursPerSprintChart.members.map((member, idx) => (
+                        <Bar
+                          key={member}
+                          dataKey={member}
+                          fill={palette[idx % palette.length]}
+                          name={member}
+                          radius={[8, 8, 0, 0]}
+                        >
+                          <LabelList dataKey={member} position="top" fill="#fff" fontSize={14} />
+                        </Bar>
+                      ));
+                    })()}
                   </BarChart>
                 </ResponsiveContainer>
               </>

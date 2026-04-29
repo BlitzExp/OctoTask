@@ -247,6 +247,12 @@
     box-sizing: border-box;
 }
 
+.analytics-charts-row.analytics-charts-row-allsprints .analytics-chart-grades,
+.analytics-charts-row.analytics-charts-row-allsprints .analytics-chart-tasks {
+    flex: 0 1 50%;
+    min-width: 0;
+}
+
 .analytics-recent-activity {
     flex: 0 1 50%;
     background-color: #37343D;

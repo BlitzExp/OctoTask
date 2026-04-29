@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
@@ -92,6 +93,20 @@ public class TaskController {
         try {
             var updatedTask = taskService.updateTask(taskId, taskData);
             return ResponseEntity.ok(updatedTask);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "status", "error",
+                            "error", ex.getClass().getSimpleName(),
+                            "message", rootCauseMessage(ex)));
+        }
+    }
+
+    @PutMapping("/delete/{taskId}")
+    public ResponseEntity<?> deleteTaskLogically(@PathVariable int taskId) {
+        try {
+            taskService.deleteTask(taskId);
+            return ResponseEntity.ok(Map.of("status", "success", "message", "Task deleted successfully"));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(

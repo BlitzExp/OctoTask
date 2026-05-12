@@ -66,6 +66,28 @@ $env:TELEGRAM_BOT_NAME = "<bot_name>"
 
 Without valid Telegram credentials, startup will fail with a 401 from Telegram API when bot is enabled.
 
+## 7) Local Docker test
+
+Build the image from the backend folder:
+
+```bash
+cd MtdrSpring/backend
+docker build -t todolistapp-springboot:local .
+cp .env.example .env
+```
+
+Manually edit `.env` with real local values before running the container.
+
+```bash
+docker run --rm \
+  --env-file .env \
+  -v "$PWD/wallet:/mtdrworkshop/creds:ro" \
+  -p 8080:8080 \
+  todolistapp-springboot:local
+```
+
+`docker build` should not need secrets because the image is compiled without environment-specific runtime configuration. `docker run` receives secrets through `--env-file`, and the Oracle wallet is mounted at runtime as read-only under `/mtdrworkshop/creds`. This keeps the image generic and reusable across local, test, and deployment environments.
+
 ## Troubleshooting
 
 - `ORA-17067 Invalid Oracle URL`: check `db_url` format and wallet path in `TNS_ADMIN`.

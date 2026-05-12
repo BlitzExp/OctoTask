@@ -1,18 +1,31 @@
-FROM openjdk:22-jdk
-#COPY pom.xml /tmp/
-#COPY src /tmp/src/
-RUN mkdir -p /mtdrworkshop/creds
-COPY wallet/ /mtdrworkshop/creds
-WORKDIR /tmp/
+# syntax=docker/dockerfile:1.7
+
+FROM eclipse-temurin:17-jdk-jammy AS builder
+
+WORKDIR /workspace
+
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+
+RUN chmod +x mvnw
+
+COPY src/ src/
+
+RUN ./mvnw -B -DskipTests clean package spring-boot:repackage
+
+
+FROM eclipse-temurin:17-jre-jammy
+
+WORKDIR /app
+
+RUN useradd --system --uid 10001 appuser \
+    && mkdir -p /mtdrworkshop/creds \
+    && chown -R appuser /app /mtdrworkshop
+
+COPY --from=builder /workspace/target/MyTodoList-0.0.1-SNAPSHOT.jar /app/MyTodoList.jar
+
+USER appuser
+
 EXPOSE 8080
-COPY target/MyTodoList-0.0.1-SNAPSHOT.jar MyTodoList.jar
 
-ENV ui_username="admin"
-ENV ui_password="None0001"
-
-ENV db_user="octotask"
-ENV dbpassword="Juanddios_1234"
-ENV db_url="jdbc:oracle:thin:@mgqba7appqlizl1d_tp?TNS_ADMIN=/mtdrworkshop/creds"
-ENV driver_class_name="oracle.jdbc.OracleDriver"
-
-ENTRYPOINT ["java","-jar","MyTodoList.jar"]
+ENTRYPOINT ["java", "-jar", "/app/MyTodoList.jar"]

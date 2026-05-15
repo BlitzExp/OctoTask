@@ -52,6 +52,12 @@ function TaskDashboard({ user }) {
     handleCloseEditModal();
   };
 
+  const handleDeleteTask = (deletedTaskId) => {
+    const updatedTasks = tasks.filter(task => task.id !== deletedTaskId);
+    setTasks(updatedTasks);
+    handleCloseEditModal();
+  }
+
   useEffect(() => {
     async function fetchTasks() {
       if (!user || !user.id) {
@@ -283,6 +289,7 @@ function TaskDashboard({ user }) {
           task={selectedTask}
           onClose={handleCloseEditModal}
           onSave={handleSaveTask}
+          onDelete={handleDeleteTask}
         />
       )}
 
@@ -291,7 +298,6 @@ function TaskDashboard({ user }) {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         updateTaskList={(newTask) => {
-          // Refetch tasks after creating a new one
           if (user.role === 'admin') {
             setTasks(prevTasks => [...prevTasks, newTask]);
           }else{

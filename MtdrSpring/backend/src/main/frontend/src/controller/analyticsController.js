@@ -11,6 +11,8 @@ import {
   fetchWorkHoursSprint,
   fetchAVGTasksPerMember,
   fetchAVGHoursPerMember,
+  fetchCompletedTasksByMemberPerSprint,
+  fetchWorkHoursByMemberPerSprint,
 } from "../services/AnalyticsService";
 
 export async function fetchNumTasksSprintController(teamId, sprintId) {
@@ -132,6 +134,29 @@ export async function fetchAVGHours(teamId) {
     return data.avg_hours_per_member;
   } catch (error) {
     console.error("Error fetching average hours per member:", error);
+    throw error;
+  }
+}
+
+export async function fetchCompletedTasksByMemberPerSprintController(teamId) {
+  try {
+    const data = await fetchCompletedTasksByMemberPerSprint(teamId);
+    return data.completed_tasks_by_member_per_sprint;
+  } catch (error) {
+    console.error(
+      "Error fetching completed tasks by member per sprint:",
+      error,
+    );
+    throw error;
+  }
+}
+
+export async function fetchWorkHoursByMemberPerSprintController(teamId) {
+  try {
+    const data = await fetchWorkHoursByMemberPerSprint(teamId);
+    return data.work_hours_by_member_per_sprint;
+  } catch (error) {
+    console.error("Error fetching work hours by member per sprint:", error);
     throw error;
   }
 }

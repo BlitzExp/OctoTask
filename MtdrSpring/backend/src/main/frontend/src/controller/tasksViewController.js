@@ -97,6 +97,16 @@ export async function createTaskController(taskData) {
   }
 }
 
+export async function deleteTaskController(taskId) {
+  try {
+    await tasksService.deleteTask(taskId);
+    console.log("Task deleted successfully:", taskId);
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    throw error;
+  }
+}
+
 export function updateTaskController(taskId, taskData) {
   try {
     const updatedTask = tasksService.updateTask(taskId, taskData);

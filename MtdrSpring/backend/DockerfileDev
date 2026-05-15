@@ -1,18 +1,21 @@
-FROM openjdk:22-jdk
-#COPY pom.xml /tmp/
-#COPY src /tmp/src/
-RUN mkdir -p /mtdrworkshop/creds
-COPY wallet/ /mtdrworkshop/creds
-WORKDIR /tmp/
+FROM eclipse-temurin:17-jdk AS build
+
+WORKDIR /workspace
+
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+COPY src ./src
+
+RUN ./mvnw -B clean package -DskipTests
+
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
 EXPOSE 8080
-COPY target/MyTodoList-0.0.1-SNAPSHOT.jar MyTodoList.jar
 
-ENV ui_username="admin"
-ENV ui_password="none0001"
+ENV DRIVER_CLASS_NAME=oracle.jdbc.OracleDriver
 
-ENV db_user="octotask"
-ENV dbpassword="Juanddios_1234"
-ENV db_url="jdbc:oracle:thin:@mgqba7appqlizl1d_tp?TNS_ADMIN=/mtdrworkshop/creds"
-ENV driver_class_name="oracle.jdbc.OracleDriver"
+COPY --from=build /workspace/target/MyTodoList-0.0.1-SNAPSHOT.jar app.jar
 
-ENTRYPOINT ["java","-jar","MyTodoList.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]

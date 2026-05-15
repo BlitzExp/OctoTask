@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { FaUser } from "react-icons/fa";
-import {getAllSprintsController, getTeamMatesController} from "../../controller/filterController";
-import {getTimeUntilDue} from "../../controller/operationsController";
-import { updateTaskController } from '../../controller/tasksViewController';
-import './taskUpdate.css';
+import {
+  getAllSprintsController,
+  getTeamMatesController,
+} from "../../controller/filterController";
+import { getTimeUntilDue } from "../../controller/operationsController";
+import {
+  updateTaskController,
+  deleteTaskController,
+} from "../../controller/tasksViewController";
+import "./taskUpdate.css";
 
-const TaskUpdate = ({ teamId, task, onClose, onSave }) => {
+const TaskUpdate = ({ teamId, task, onClose, onSave, onDelete }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [stateId, setStateId] = useState('');
@@ -88,6 +94,20 @@ const TaskUpdate = ({ teamId, task, onClose, onSave }) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (window.confirm("¿Estás seguro de que quieres borrar esta task?")) {
+      try {
+        await deleteTaskController(task.id);
+        if (typeof onDelete === "function") {
+          onDelete(task.id);
+        }
+        onClose();
+      } catch (error) {
+        console.error("Error deleting task:", error);
+      }
+    }
+  };
+
   const getPriorityClass = () => {
     switch (task.getPriorityLabel()) {
       case "H":
@@ -119,7 +139,7 @@ const TaskUpdate = ({ teamId, task, onClose, onSave }) => {
           />
           <div className="tu-modal-actions">
             <button className="tu-btn-save" onClick={handleSave}>
-            Save
+              Save
             </button>
             <button className="tu-btn-close" onClick={onClose}>
               Cancel
@@ -127,7 +147,7 @@ const TaskUpdate = ({ teamId, task, onClose, onSave }) => {
           </div>
         </div>
 
-        <div className='modal-task-info'>
+        <div className="modal-task-info">
           <div className="modal-task-info-task-column">
             <div className="modal-task-info-task-row-person">
               <div className="modal-task-info-task-row-person-tag">
@@ -256,6 +276,9 @@ const TaskUpdate = ({ teamId, task, onClose, onSave }) => {
               ) : (
                 <div className="modal-task-info-link-column-empty">No links available</div>
               )}
+              <button className="tu-btn-close tu-btn-delete" onClick={handleDelete}>
+                Delete Task
+              </button>
             </div>
           </div>
         </div>

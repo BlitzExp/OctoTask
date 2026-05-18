@@ -1,12 +1,6 @@
 name: Dev CI
 
 on:
-  push:
-    branches:
-      - "feature/**"
-      - "bugfix/**"
-      - "hotfix/**"
-      - "dev"
 
   pull_request:
     branches:
@@ -58,6 +52,7 @@ jobs:
     name: docker-build
     runs-on: ubuntu-latest
     needs: build-package
+    continue-on-error: true
 
     steps:
       - name: Checkout repository

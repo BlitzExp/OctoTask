@@ -17,7 +17,6 @@ jobs:
   build-package:
     name: build-package
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     defaults:
       run:
@@ -53,7 +52,6 @@ jobs:
     name: docker-build
     runs-on: ubuntu-latest
     needs: build-package
-    continue-on-error: true
 
     steps:
       - name: Checkout repository

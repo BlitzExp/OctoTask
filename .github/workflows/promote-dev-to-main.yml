@@ -1,0 +1,99 @@
+name: Promote Dev to Main
+
+on:
+  workflow_run:
+    workflows:
+      - Dev CI
+    branches:
+      - dev
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: promote-dev-to-main
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    name: promote-dev-to-main
+    runs-on: ubuntu-latest
+
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Check whether dev has changes not in main
+        id: diff
+        run: |
+          git fetch origin main dev
+
+          if git diff --quiet origin/main..origin/dev; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "dev and main are already identical."
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "dev has changes that are not in main."
+          fi
+
+      - name: Find existing dev to main PR
+        if: steps.diff.outputs.has_changes == 'true'
+        id: existing_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER=$(gh pr list \
+            --base main \
+            --head dev \
+            --state open \
+            --json number \
+            --jq '.[0].number')
+
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Create dev to main PR
+        if: steps.diff.outputs.has_changes == 'true' && steps.existing_pr.outputs.number == ''
+        id: create_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_URL=$(gh pr create \
+            --base main \
+            --head dev \
+            --title "chore: promote dev to main" \
+            --body "Automated promotion after Dev CI completed successfully.")
+
+          echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve PR number
+        if: steps.diff.outputs.has_changes == 'true'
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER=$(gh pr list \
+            --base main \
+            --head dev \
+            --state open \
+            --json number \
+            --jq '.[0].number')
+
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Merge dev into main
+        if: steps.diff.outputs.has_changes == 'true' && steps.pr.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ steps.pr.outputs.number }}" \
+            --merge \
+            --subject "chore: promote dev to main" \
+            --body "Automated merge from dev after Dev CI completed successfully."

@@ -1,0 +1,49 @@
+name: Main PR Gate
+
+on:
+  pull_request:
+    branches:
+      - "main"
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+
+jobs:
+  main-pr-gate:
+    name: main-pr-gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate PR source and creator
+        run: |
+          echo "Base branch: ${{ github.event.pull_request.base.ref }}"
+          echo "Head branch: ${{ github.event.pull_request.head.ref }}"
+          echo "Head repo: ${{ github.event.pull_request.head.repo.full_name }}"
+          echo "PR author: ${{ github.event.pull_request.user.login }}"
+
+          if [ "${{ github.event.pull_request.base.ref }}" != "main" ]; then
+            echo "This PR does not target main."
+            exit 1
+          fi
+
+          if [ "${{ github.event.pull_request.head.ref }}" != "dev" ]; then
+            echo "Only PRs from dev to main are allowed."
+            exit 1
+          fi
+
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "PRs to main must come from this repository, not a fork."
+            exit 1
+          fi
+
+          if [ "${{ github.event.pull_request.user.login }}" != "github-actions[bot]" ]; then
+            echo "Only the automated Promote Dev to Main workflow may create PRs into main."
+            exit 1
+          fi
+
+          echo "Valid automated dev to main promotion PR."

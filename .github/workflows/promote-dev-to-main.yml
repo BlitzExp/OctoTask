@@ -95,5 +95,6 @@ jobs:
         run: |
           gh pr merge "${{ steps.pr.outputs.number }}" \
             --merge \
+            --auto \
             --subject "chore: promote dev to main" \
             --body "Automated merge from dev after Dev CI completed successfully."

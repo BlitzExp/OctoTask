@@ -10,7 +10,7 @@ function RegisterView({ onRegister, onBackToLogin }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('');
-  const [error, setError] = useState('');
+  const [setError] = useState('');
 
   async function handleSubmit(event) {
     try {

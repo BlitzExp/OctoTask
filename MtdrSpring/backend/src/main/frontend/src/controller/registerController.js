@@ -12,5 +12,6 @@ export async function registerUser(username, email, password, role) {
             return createUserSuccess;
         }
     }
+    // eslint-disable-next-line no-unreachable
     return null;
 }

@@ -60,7 +60,7 @@ const TaskUpdate = ({ teamId, task, onClose, onSave, onDelete }) => {
         { id: 4, name: 'LATE' },
     ];
     setStates(mockStates);
-    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task]);
 
   const handleSave = async () => {

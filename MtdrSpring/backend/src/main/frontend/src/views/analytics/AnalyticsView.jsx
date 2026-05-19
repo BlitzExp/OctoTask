@@ -28,15 +28,15 @@ function AnalyticsView({ user }) {
   const [numTotalTasks, setNumTotalTasks] = useState(0);
 
   const [membersStatus, setMembersStatus] = useState([]);
-  const [workHours, setWorkHours] = useState([]);
-  const [avgTasksPerMember, setAvgTasksPerMember] = useState([]);
-  const [avgHoursPerMember, setAvgHoursPerMember] = useState([]);
+  const [workHours, setWorkHours ] = useState([]);
+  const [ setAvgTasksPerMember ] = useState([]);
+  const [ setAvgHoursPerMember ] = useState([]);
 
   const [completedByMemberPerSprint, setCompletedByMemberPerSprint] = useState([]);
   const [workHoursByMemberPerSprint, setWorkHoursByMemberPerSprint] = useState([]);
 
   const [kpiGrades, setKpiGrades] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
+  const [recentActivity] = useState([]);
 
   const completedPerSprintChart = useMemo(() => {
     const rows = Array.isArray(completedByMemberPerSprint) ? completedByMemberPerSprint : [];
@@ -123,6 +123,7 @@ function AnalyticsView({ user }) {
       }
     }
     fetchSprints();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.teamId]);
 
 

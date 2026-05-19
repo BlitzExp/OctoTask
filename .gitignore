@@ -52,3 +52,4 @@ frontend/yarn-error.log*
 /MtdrSpring/backend/.env
 /MtdrSpring/backend/.env.*
 !/MtdrSpring/backend/.env.example
+MtdrSpring/backend/src/test/java/com/springboot/MyTodoList/bot/OctoTaskBotTest.java

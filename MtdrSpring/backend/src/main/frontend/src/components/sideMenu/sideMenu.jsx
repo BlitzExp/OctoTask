@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React from 'react';
 import { FaHome, FaFile, FaChartBar, FaBell, FaUsers, FaUser} from "react-icons/fa";
 import './sideMenu.css';
 

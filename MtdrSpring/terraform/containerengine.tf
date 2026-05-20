@@ -64,7 +64,7 @@ resource "oci_containerengine_node_pool" "oke_node_pool" {
   }
   node_source_details {
     #Required
-    image_id    = local.oracle_linux_images.0 # Latest
+    image_id    = "OKE-1.34.2" # Latest
     source_type = "IMAGE"
     #Optional
     #boot_volume_size_in_gbs = "60"

@@ -42,10 +42,12 @@ spec:
       labels:
         app: todolistapp-springboot
         version: v1
+      annotations:
+        octotask/build: "${BUILDRUN_HASH}"
     spec:
       containers:
         - name: todolistapp-springboot
-          image: %DOCKER_REGISTRY%/todolistapp-springboot:0.1
+          image: mx-queretaro-1.ocir.io/<tenancy-namespace>/<repo-name>/todolistapp-springboot:${BUILDRUN_HASH}
           imagePullPolicy: Always
 
           envFrom:

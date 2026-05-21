@@ -7,15 +7,14 @@ metadata:
 spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
-
   ports:
-    - port: 80
+    - name: http
+      port: 80
       protocol: TCP
-      targetPort: 8080
+      targetPort: http
   selector:
     app: todolistapp-springboot
 ---
-#this is new stuff for hosting on the load balancer
 apiVersion: v1
 kind: Service
 metadata:
@@ -24,7 +23,8 @@ spec:
   selector:
     app: todolistapp-springboot
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: http
 ---
@@ -33,10 +33,10 @@ kind: Deployment
 metadata:
   name: todolistapp-springboot-deployment
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app: todolistapp-springboot
-  replicas: 2
   template:
     metadata:
       labels:
@@ -47,41 +47,83 @@ spec:
         - name: todolistapp-springboot
           image: %DOCKER_REGISTRY%/todolistapp-springboot:0.1
           imagePullPolicy: Always
+
+          envFrom:
+            - configMapRef:
+                name: todolistapp-env
+                optional: true
+
           env:
-            - name: db_user
-              value: "TODOUSER"
-            - name: db_url
-              value: "jdbc:oracle:thin:@%TODO_PDB_NAME%_tp?TNS_ADMIN=/mtdrworkshop/creds"
-            - name: todo.table.name
-              value: "todoitem"
+            # Compatibility variables for your existing Spring Boot config.
+            # These map uppercase .env keys into the older lowercase names
+            # your previous deployment used.
+
             - name: driver_class_name
-              value: "oracle.jdbc.OracleDriver"
-            - name: OCI_REGION
-              value: "%OCI_REGION%"
+              valueFrom:
+                configMapKeyRef:
+                  name: todolistapp-env
+                  key: DRIVER_CLASS_NAME
+                  optional: true
+
+            - name: db_user
+              valueFrom:
+                configMapKeyRef:
+                  name: todolistapp-env
+                  key: DB_USER
+                  optional: true
+
             - name: dbpassword
               valueFrom:
-                secretKeyRef:
-                  name: dbuser
-                  key: dbpassword
+                configMapKeyRef:
+                  name: todolistapp-env
+                  key: DB_PASSWORD
                   optional: true
+
+            - name: db_url
+              valueFrom:
+                configMapKeyRef:
+                  name: todolistapp-env
+                  key: DB_URL
+                  optional: true
+
+            - name: todo.table.name
+              valueFrom:
+                configMapKeyRef:
+                  name: todolistapp-env
+                  key: TODO_TABLE_NAME
+                  optional: true
+
             - name: ui_username
-              value: "%UI_USERNAME%"
+              valueFrom:
+                configMapKeyRef:
+                  name: todolistapp-env
+                  key: UI_USERNAME
+                  optional: true
+
             - name: ui_password
               valueFrom:
-                secretKeyRef:
-                  name: frontendadmin
-                  key: password
+                configMapKeyRef:
+                  name: todolistapp-env
+                  key: UI_PASSWORD
                   optional: true
+
           volumeMounts:
             - name: creds
               mountPath: /mtdrworkshop/creds
+              readOnly: true
+
           ports:
-            - containerPort: 8080
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
       restartPolicy: Always
+
       volumes:
         - name: creds
           secret:
             secretName: db-wallet-secret
+
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
@@ -89,4 +131,3 @@ spec:
           labelSelector:
             matchLabels:
               app: todolistapp-springboot
----

@@ -74,7 +74,7 @@ resource "oci_containerengine_node_pool" "oke_node_pool" {
   }
   node_source_details {
     #Required
-    image_id    = local.oracle_linux_images.0 # Latest
+    image_id    = try(local.oracle_linux_images[0], "") # Latest image matching var.okeKubernetesVersion
     source_type = "IMAGE"
     #Optional
     #boot_volume_size_in_gbs = "60"
@@ -92,6 +92,10 @@ resource "oci_containerengine_node_pool" "oke_node_pool" {
       condition     = contains(data.oci_containerengine_node_pool_option.mtdrworkshop_node_pool_option.kubernetes_versions, var.okeKubernetesVersion)
       error_message = "La versión de Kubernetes ${var.okeKubernetesVersion} no es válida para el Node Pool. Versiones disponibles: ${join(", ", data.oci_containerengine_node_pool_option.mtdrworkshop_node_pool_option.kubernetes_versions)}"
     }
+    precondition {
+      condition     = length(local.oracle_linux_images) > 0
+      error_message = "No se encontró una imagen Oracle Linux de OKE compatible con Kubernetes ${var.okeKubernetesVersion}."
+    }
   }
 }
 data "oci_containerengine_cluster_option" "mtdrworkshop_cluster_option" {
@@ -101,8 +105,9 @@ data "oci_containerengine_node_pool_option" "mtdrworkshop_node_pool_option" {
   node_pool_option_id = "all"
 }
 locals {
-  all_sources = data.oci_containerengine_node_pool_option.mtdrworkshop_node_pool_option.sources
+  all_sources                  = data.oci_containerengine_node_pool_option.mtdrworkshop_node_pool_option.sources
+  oke_kubernetes_image_version = replace(var.okeKubernetesVersion, "v", "")
   #oracle_linux_images = [for source in local.all_sources : source.image_id if length(regexall("Oracle-Linux-[0-9]*.[0-9]*-aarch64-20[0-9]*",source.source_name)) > 0] #ARM Option
-  oracle_linux_images = [for source in local.all_sources : source.image_id if length(regexall("Oracle-Linux-[0-9]*.[0-9]*-20[0-9]*",source.source_name)) > 0]
+  oracle_linux_images = [for source in local.all_sources : source.image_id if length(regexall("Oracle-Linux-[0-9]*.[0-9]*-20[0-9]*.*OKE-${local.oke_kubernetes_image_version}", source.source_name)) > 0]
 
 }

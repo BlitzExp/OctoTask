@@ -143,4 +143,3 @@ spec:
           labelSelector:
             matchLabels:
               app: todolistapp-springboot
-              

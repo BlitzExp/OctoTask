@@ -1,38 +1,50 @@
-version: 0.1 
+version: 0.1
 component: build
-timeoutInSeconds: 600
+timeoutInSeconds: 1200
+runAs: root
 shell: bash
+failImmediatelyOnError: true
 
 env:
-  variables:
-    JAVA_HOME: /usr/lib64/graalvm/graalvm-java22
-
   exportedVariables:
-    - BuildServiceDemoVersion
+    - BUILDRUN_HASH
 
 steps:
   - type: Command
-    name: "Install GraalVM Enterprise 22.x Native Image for Java22"
-    command:  yum -y install graalvm-22-jdk.x86_64;
-              ls /usr/lib64/graalvm/
+    name: "Define build tag"
+    command: |
+      set -euo pipefail
+
+      if [ -n "${OCI_PRIMARY_SOURCE_COMMIT_HASH:-}" ]; then
+        BUILDRUN_HASH="$(echo "$OCI_PRIMARY_SOURCE_COMMIT_HASH" | cut -c1-7)"
+      elif [ -n "${OCI_TRIGGER_COMMIT_HASH:-}" ]; then
+        BUILDRUN_HASH="$(echo "$OCI_TRIGGER_COMMIT_HASH" | cut -c1-7)"
+      else
+        BUILDRUN_HASH="$(echo "$OCI_BUILD_RUN_ID" | cut -c1-7)"
+      fi
+
+      export BUILDRUN_HASH
+      echo "BUILDRUN_HASH=$BUILDRUN_HASH"
 
   - type: Command
-    name: "Set PATH Variable"
-    command: export PATH=$JAVA_HOME/bin:$PATH
+    name: "Build Docker image"
+    command: |
+      set -euo pipefail
+      cd MtdrSpring/backend
+      docker build -t todolistapp-springboot:latest .
 
   - type: Command
-    name: "Docker Login"
-    command:  cd MtdrSpring;
-              oci os object get --bucket-name octotask-ysmiy --name deployment_config.tgz --file deployment_config.tgz;
-              tar -xzvf deployment_config.tgz;
-              source env.sh;
-              cat at.cfg | docker login -u "axyyzvpljivg/adan0001@gmail.com" --password-stdin phx.ocir.io
+    name: "Prepare Kubernetes manifest"
+    command: |
+      set -euo pipefail
+      cp MtdrSpring/backend/src/main/resources/todolistapp-springboot.yaml /tmp/todolistapp-springboot.yaml
+      cat /tmp/todolistapp-springboot.yaml
 
-  - type: Command
-    name: "Build"
-    command:  cd MtdrSpring;
-              source env.sh;
-              (cd backend;source build.sh)
+outputArtifacts:
+  - name: octotask-image
+    type: DOCKER_IMAGE
+    location: todolistapp-springboot:latest
 
-
-
+  - name: octotask-oke-manifest
+    type: BINARY
+    location: /tmp/todolistapp-springboot.yaml

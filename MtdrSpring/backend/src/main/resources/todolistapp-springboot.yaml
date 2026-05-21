@@ -45,20 +45,20 @@ spec:
     spec:
       containers:
         - name: todolistapp-springboot
-          image: %IMAGE%
+          image: %DOCKER_REGISTRY%/todolistapp-springboot:0.1
           imagePullPolicy: Always
           env:
-            - name: DB_USER
-              value: "%DB_USER%"
-            - name: DB_URL
-              value: "%DB_URL%"
+            - name: db_user
+              value: "TODOUSER"
+            - name: db_url
+              value: "jdbc:oracle:thin:@%TODO_PDB_NAME%_tp?TNS_ADMIN=/mtdrworkshop/creds"
             - name: todo.table.name
               value: "todoitem"
-            - name: DRIVER_CLASS_NAME
-              value: "%DRIVER_CLASS_NAME%"
+            - name: driver_class_name
+              value: "oracle.jdbc.OracleDriver"
             - name: OCI_REGION
               value: "%OCI_REGION%"
-            - name: DB_PASSWORD
+            - name: dbpassword
               valueFrom:
                 secretKeyRef:
                   name: dbuser

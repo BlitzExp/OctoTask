@@ -4,6 +4,9 @@ variable "ociTenancyOcid" {}
 variable "ociUserOcid" {}
 variable "ociCompartmentOcid" {}
 variable "ociRegionIdentifier" {}
+variable "okeKubernetesVersion" {
+  default = "v1.35.0"
+}
 variable "mtdrDbName" {}
 variable "runName" {}
 

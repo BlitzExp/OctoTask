@@ -20,6 +20,5 @@ docker build -f Dockerfile -t $IMAGE .
 
 docker push $IMAGE
 if [  $? -eq 0 ]; then
-    echo "$IMAGE" > .last-image
     docker rmi "$IMAGE" #local
 fi

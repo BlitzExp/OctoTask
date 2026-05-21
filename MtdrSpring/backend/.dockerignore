@@ -5,7 +5,8 @@
 wallet/
 
 # Build outputs
-target/
+target/*
+!target/*.jar
 src/main/frontend/node_modules/
 src/main/frontend/build/
 

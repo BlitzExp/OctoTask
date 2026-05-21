@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre-jammy
+FROM docker.io/eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
@@ -14,3 +14,5 @@ USER appuser
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "/app/MyTodoList.jar"]
+
+

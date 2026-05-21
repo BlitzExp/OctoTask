@@ -37,8 +37,9 @@ steps:
     name: "Prepare Kubernetes manifest"
     command: |
       set -euo pipefail
-      cp MtdrSpring/backend/src/main/resources/todolistapp-springboot.yaml /tmp/todolistapp-springboot.yaml
-      cat /tmp/todolistapp-springboot.yaml
+      cp MtdrSpring/backend/src/main/resources/todolistapp-springboot.yaml todolistapp-springboot.yaml
+      echo "Prepared manifest:"
+      cat todolistapp-springboot.yaml
 
 outputArtifacts:
   - name: octotask-image
@@ -47,4 +48,4 @@ outputArtifacts:
 
   - name: octotask-oke-manifest
     type: BINARY
-    location: /tmp/todolistapp-springboot.yaml
+    location: todolistapp-springboot.yaml

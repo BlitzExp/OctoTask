@@ -47,66 +47,76 @@ spec:
     spec:
       containers:
         - name: todolistapp-springboot
-          image: mx-queretaro-1.ocir.io/<tenancy-namespace>/<repo-name>/todolistapp-springboot:${BUILDRUN_HASH}
+          image: mx-queretaro-1.ocir.io/axazeziwzv4z/octotask/nl6on/todolistapp-springboot:${BUILDRUN_HASH}
           imagePullPolicy: Always
 
           envFrom:
-            - configMapRef:
+            - secretRef:
                 name: todolistapp-env
                 optional: true
 
           env:
-            # Compatibility variables for your existing Spring Boot config.
-            # These map uppercase .env keys into the older lowercase names
-            # your previous deployment used.
-
             - name: driver_class_name
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: todolistapp-env
                   key: DRIVER_CLASS_NAME
                   optional: true
 
             - name: db_user
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: todolistapp-env
                   key: DB_USER
                   optional: true
 
             - name: dbpassword
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: todolistapp-env
                   key: DB_PASSWORD
                   optional: true
 
             - name: db_url
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: todolistapp-env
                   key: DB_URL
                   optional: true
 
             - name: todo.table.name
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: todolistapp-env
                   key: TODO_TABLE_NAME
                   optional: true
 
             - name: ui_username
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: todolistapp-env
                   key: UI_USERNAME
                   optional: true
 
             - name: ui_password
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: todolistapp-env
                   key: UI_PASSWORD
+                  optional: true
+
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: todolistapp-env
+                  key: TELEGRAM_BOT_TOKEN
+                  optional: true
+
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: todolistapp-env
+                  key: GEMINI_API_KEY
                   optional: true
 
           volumeMounts:

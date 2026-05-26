@@ -29,14 +29,14 @@ function AnalyticsView({ user }) {
 
   const [membersStatus, setMembersStatus] = useState([]);
   const [workHours, setWorkHours ] = useState([]);
-  const [ setAvgTasksPerMember ] = useState([]);
-  const [ setAvgHoursPerMember ] = useState([]);
+  const [avgTasksPerMember, setAvgTasksPerMember ] = useState([]);
+  const [avgHoursPerMember, setAvgHoursPerMember ] = useState([]);
 
   const [completedByMemberPerSprint, setCompletedByMemberPerSprint] = useState([]);
   const [workHoursByMemberPerSprint, setWorkHoursByMemberPerSprint] = useState([]);
 
   const [kpiGrades, setKpiGrades] = useState([]);
-  const [recentActivity] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
 
   const completedPerSprintChart = useMemo(() => {
     const rows = Array.isArray(completedByMemberPerSprint) ? completedByMemberPerSprint : [];

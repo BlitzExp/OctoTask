@@ -1,8 +1,8 @@
 {
-    "short_name": "MyToDo React",
-    "name": "My Todo List React Application",
-    "start_url": ".",
-    "display": "standalone",
-    "theme_color": "#000000",
-    "background_color": "#ffffff"
-  }
+  "short_name": "OctoBuddy",
+  "name": "OctoBuddy — Your task pal",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1b0c33",
+  "background_color": "#0a0a0a"
+}

@@ -215,7 +215,7 @@ function AnalyticsView({ user }) {
         <div className="analytics-mainKPI-row">
             <div className="analytics-kpi-card kpi-horizontal">
               <div className="analytics-kpi-icon-circle">
-                <MdInsertDriveFile size={48} color="#FFFFFF" />
+                <MdInsertDriveFile size={48} color="var(--text-0)" />
               </div>
               <div className="analytics-kpi-content">
                 <span className='analytics-kpi-label'>Missing & On Going Tasks</span>
@@ -226,16 +226,16 @@ function AnalyticsView({ user }) {
               <div className="analytics-kpi-progress-circle">
                 {numTotalTasks > 0 && (
                   <RadialBarChart width={96} height={96} cx={48} cy={48} innerRadius={36} outerRadius={44} barSize={14}
-                    data={[{ name: 'Completed', value: numTotalTasks > 0 ? Math.round((numCompletedTasks / numTotalTasks) * 100) : 0, fill: '#fff' }]}
+                    data={[{ name: 'Completed', value: numTotalTasks > 0 ? Math.round((numCompletedTasks / numTotalTasks) * 100) : 0, fill: 'var(--text-0)' }]}
                     style={{ background: 'transparent', maxWidth: '100%', height: 'auto' }}>
                     <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
                     <RadialBar 
                       minAngle={0}
-                      background={{ fill: '#5c5766' }}
+                      background={{ fill: 'var(--border-0)' }}
                       clockWise={true}
                       dataKey="value"
                       cornerRadius={44}
-                      fill="#fff"
+                      fill="var(--text-0)"
                     />
                   </RadialBarChart>
                 )}
@@ -248,7 +248,7 @@ function AnalyticsView({ user }) {
             </div>
             <div className="analytics-kpi-card kpi-horizontal">
               <div className="analytics-kpi-icon-circle">
-                <MdCalendarMonth size={48} color="#FFFFFF" />
+                <MdCalendarMonth size={48} color="var(--text-0)" />
               </div>
               <div className="analytics-kpi-content">
                 <span className='analytics-kpi-label'>Late Tasks</span>
@@ -273,37 +273,37 @@ function AnalyticsView({ user }) {
                     barCategoryGap={10}
                     barGap={0}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="member" stroke="#fff" tick={{ fontSize: 14 }} />
-                    <YAxis stroke="#fff" allowDecimals={false} tick={{ fontSize: 14 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-0)" />
+                    <XAxis dataKey="member" stroke="var(--text-0)" tick={{ fontSize: 14 }} />
+                    <YAxis stroke="var(--text-0)" allowDecimals={false} tick={{ fontSize: 14 }} />
                     <Tooltip
-                      cursor={{ fill: '#444', opacity: 0.2 }}
-                      contentStyle={{ background: '#222', border: 'none', color: '#fff' }}
+                      cursor={{ fill: 'var(--border-0)', opacity: 0.2 }}
+                      contentStyle={{ background: 'var(--surface-1)', border: 'none', color: 'var(--text-0)' }}
                     />
-                    <Legend wrapperStyle={{ color: '#fff' }} />
+                    <Legend wrapperStyle={{ color: 'var(--text-0)' }} />
                     <Bar
                       dataKey="completedTasks"
-                      fill="#7ed957"
+                      fill="#58d0a7"
                       name="Completed"
                       radius={[8, 8, 0, 0]}
                     >
-                      <LabelList dataKey="completedTasks" position="top" fill="#fff" fontSize={14} />
+                      <LabelList dataKey="completedTasks" position="top" fill="var(--text-0)" fontSize={14} />
                     </Bar>
                     <Bar
                       dataKey="pendingTasks"
-                      fill="#ff9800"
+                      fill="#4aa8ff"
                       name="Pending"
                       radius={[8, 8, 0, 0]}
                     >
-                      <LabelList dataKey="pendingTasks" position="top" fill="#fff" fontSize={14} />
+                      <LabelList dataKey="pendingTasks" position="top" fill="var(--text-0)" fontSize={14} />
                     </Bar>
                     <Bar
                       dataKey="lateTasks"
-                      fill="#c56261"
+                      fill="#ff6b81"
                       name="Late"
                       radius={[8, 8, 0, 0]}
                     >
-                      <LabelList dataKey="lateTasks" position="top" fill="#fff" fontSize={14} />
+                      <LabelList dataKey="lateTasks" position="top" fill="var(--text-0)" fontSize={14} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -318,32 +318,32 @@ function AnalyticsView({ user }) {
                     barCategoryGap={10}
                     barGap={0}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-0)" />
                     <XAxis
                       dataKey="sprint"
-                      stroke="#fff"
+                      stroke="var(--text-0)"
                       tick={{ fontSize: 14 }}
-                      label={{ value: 'Sprint Number', position: 'insideBottom', offset: -2, fill: '#fff' }}
+                      label={{ value: 'Sprint Number', position: 'insideBottom', offset: -2, fill: 'var(--text-0)' }}
                     />
                     <YAxis
-                      stroke="#fff"
+                      stroke="var(--text-0)"
                       allowDecimals={false}
                       tick={{ fontSize: 14 }}
                       label={{
                         value: 'Número de tareas completadas',
                         angle: -90,
                         position: 'insideLeft',
-                        fill: '#fff',
+                        fill: 'var(--text-0)',
                         style: { textAnchor: 'middle', fontFamily: 'inherit', fontSize: 14, fontWeight: 600 },
                       }}
                     />
                     <Tooltip
-                      cursor={{ fill: '#444', opacity: 0.2 }}
-                      contentStyle={{ background: '#222', border: 'none', color: '#fff' }}
+                      cursor={{ fill: 'var(--border-0)', opacity: 0.2 }}
+                      contentStyle={{ background: 'var(--surface-1)', border: 'none', color: 'var(--text-0)' }}
                     />
-                    <Legend wrapperStyle={{ color: '#fff' }} />
+                    <Legend wrapperStyle={{ color: 'var(--text-0)' }} />
                     {(() => {
-                      const palette = ['#7ed957', '#ff9800', '#c56261', '#8884d8', '#795be6'];
+                      const palette = ['#58d0a7', '#4aa8ff', '#ff6b81', '#6c7cff', '#2e7dff'];
                       return completedPerSprintChart.members.map((member, idx) => (
                         <Bar
                           key={member}
@@ -352,7 +352,7 @@ function AnalyticsView({ user }) {
                           name={member}
                           radius={[8, 8, 0, 0]}
                         >
-                          <LabelList dataKey={member} position="top" fill="#fff" fontSize={14} />
+                          <LabelList dataKey={member} position="top" fill="var(--text-0)" fontSize={14} />
                         </Bar>
                       ));
                     })()}
@@ -373,16 +373,16 @@ function AnalyticsView({ user }) {
                     }))}
                     margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="member" stroke="#fff" />
-                    <YAxis stroke="#fff" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-0)" />
+                    <XAxis dataKey="member" stroke="var(--text-0)" />
+                    <YAxis stroke="var(--text-0)" />
                     <Tooltip 
-                      cursor={{ fill: '#444', opacity: 0.2 }} 
-                      contentStyle={{ background: '#222', border: 'none', color: '#fff' }} 
+                      cursor={{ fill: 'var(--border-0)', opacity: 0.2 }} 
+                      contentStyle={{ background: 'var(--surface-1)', border: 'none', color: 'var(--text-0)' }} 
                     />
-                    <Legend wrapperStyle={{ color: '#fff' }} />
-                    <Bar dataKey="totalTime" fill="#8884d8" name="Total Hours" maxBarSize={40} radius={[8, 8, 0, 0]}>
-                      <LabelList dataKey="totalTime" position="top" fill="#fff" fontSize={14} />
+                    <Legend wrapperStyle={{ color: 'var(--text-0)' }} />
+                    <Bar dataKey="totalTime" fill="#6c7cff" name="Total Hours" maxBarSize={40} radius={[8, 8, 0, 0]}>
+                      <LabelList dataKey="totalTime" position="top" fill="var(--text-0)" fontSize={14} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -397,30 +397,30 @@ function AnalyticsView({ user }) {
                     barCategoryGap={10}
                     barGap={0}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-0)" />
                     <XAxis
                       dataKey="sprint"
-                      stroke="#fff"
+                      stroke="var(--text-0)"
                       label={{ value: 'Sprint Number', position: 'insideBottom', offset: -2, fill: '#fff' }}
                     />
                     <YAxis
-                      stroke="#fff"
+                      stroke="var(--text-0)"
                       allowDecimals={false}
                       label={{
                         value: 'Número de horas trabajadas',
                         angle: -90,
                         position: 'insideLeft',
-                        fill: '#fff',
+                        fill: 'var(--text-0)',
                         style: { textAnchor: 'middle', fontFamily: 'inherit', fontSize: 14, fontWeight: 600 },
                       }}
                     />
                     <Tooltip 
-                      cursor={{ fill: '#444', opacity: 0.2 }} 
-                      contentStyle={{ background: '#222', border: 'none', color: '#fff' }}
+                      cursor={{ fill: 'var(--border-0)', opacity: 0.2 }} 
+                      contentStyle={{ background: 'var(--surface-1)', border: 'none', color: 'var(--text-0)' }}
                     />
-                    <Legend wrapperStyle={{ color: '#fff' }} />
+                    <Legend wrapperStyle={{ color: 'var(--text-0)' }} />
                     {(() => {
-                      const palette = ['#7ed957', '#ff9800', '#c56261', '#8884d8', '#795be6'];
+                      const palette = ['#58d0a7', '#4aa8ff', '#ff6b81', '#6c7cff', '#2e7dff'];
                       return workHoursPerSprintChart.members.map((member, idx) => (
                         <Bar
                           key={member}
@@ -429,7 +429,7 @@ function AnalyticsView({ user }) {
                           name={member}
                           radius={[8, 8, 0, 0]}
                         >
-                          <LabelList dataKey={member} position="top" fill="#fff" fontSize={14} />
+                          <LabelList dataKey={member} position="top" fill="var(--text-0)" fontSize={14} />
                         </Bar>
                       ));
                     })()}
@@ -448,13 +448,13 @@ function AnalyticsView({ user }) {
                 data={kpiGrades}
                 margin={{ top: 0, right: 30, left: 0, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                <XAxis dataKey="member" stroke="#fff" tick={{ fontSize: 14 }} />
-                <YAxis stroke="#fff" domain={[0, 100]} tick={{ fontSize: 14 }} />
-                <Tooltip cursor={{ fill: '#444', opacity: 0.2 }} contentStyle={{ background: '#222', border:
-                   'none', color: '#fff' }} />
-                <Legend wrapperStyle={{ color: '#fff' }} />
-                <Bar dataKey="grade" fill="#795be6" maxBarSize={48} name="Grade" radius={[8, 8, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-0)" />
+                <XAxis dataKey="member" stroke="var(--text-0)" tick={{ fontSize: 14 }} />
+                <YAxis stroke="var(--text-0)" domain={[0, 100]} tick={{ fontSize: 14 }} />
+                <Tooltip cursor={{ fill: 'var(--border-0)', opacity: 0.2 }} contentStyle={{ background: 'var(--surface-1)', border:
+                   'none', color: 'var(--text-0)' }} />
+                <Legend wrapperStyle={{ color: 'var(--text-0)' }} />
+                <Bar dataKey="grade" fill="#2e7dff" maxBarSize={48} name="Grade" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

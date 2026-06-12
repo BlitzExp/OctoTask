@@ -1,0 +1,14 @@
+@startuml
+
+class DatabaseController {
+	{field} -dataSource : DataSource
+	{field} -jdbcTemplate : JdbcTemplate
+	{method} +ping () : ResponseEntity
+}
+
+
+
+
+
+
+@enduml

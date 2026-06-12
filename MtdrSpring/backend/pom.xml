@@ -148,4 +148,204 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>uml</id>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>de.elnarion.maven</groupId>
+						<artifactId>plantuml-generator-maven-plugin</artifactId>
+						<version>3.0.1</version>
+
+						<executions>
+							<!-- ========================= -->
+							<!-- Controllers -->
+							<!-- ========================= -->
+
+							<execution>
+								<id>generate-user-controller-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>user-controller.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.controller</scanPackage>
+									</scanPackages>
+									<whitelistRegexp>.*UserController.*</whitelistRegexp>
+									<useShortClassNames>true</useShortClassNames>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>generate-task-controller-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>task-controller.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.controller</scanPackage>
+									</scanPackages>
+									<whitelistRegexp>.*TaskController.*</whitelistRegexp>
+									<useShortClassNames>true</useShortClassNames>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>generate-stadistics-controller-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>stadistics-controller.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.controller</scanPackage>
+									</scanPackages>
+									<whitelistRegexp>.*StadisticsController.*</whitelistRegexp>
+									<useShortClassNames>true</useShortClassNames>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>generate-filter-controller-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>filter-controller.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.controller</scanPackage>
+									</scanPackages>
+									<whitelistRegexp>.*FilterController.*</whitelistRegexp>
+									<useShortClassNames>true</useShortClassNames>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>generate-database-controller-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>database-controller.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.controller</scanPackage>
+									</scanPackages>
+									<whitelistRegexp>.*DatabaseController.*</whitelistRegexp>
+									<useShortClassNames>true</useShortClassNames>
+								</configuration>
+							</execution>
+
+							<!-- ========================= -->
+							<!-- Services -->
+							<!-- ========================= -->
+
+							<execution>
+								<id>generate-user-service-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>user-service.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.services</scanPackage>
+									</scanPackages>
+									<whitelistRegexp>.*UserService.*</whitelistRegexp>
+									<useShortClassNames>true</useShortClassNames>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>generate-task-service-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>task-service.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.services</scanPackage>
+									</scanPackages>
+									<whitelistRegexp>.*TaskService.*</whitelistRegexp>
+									<useShortClassNames>true</useShortClassNames>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>generate-stadistics-service-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>stadistics-service.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.services</scanPackage>
+									</scanPackages>
+									<whitelistRegexp>.*StadisticsService.*</whitelistRegexp>
+									<useShortClassNames>true</useShortClassNames>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>generate-filter-service-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>filter-service.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.services</scanPackage>
+									</scanPackages>
+									<whitelistRegexp>.*FilterService.*</whitelistRegexp>
+									<useShortClassNames>true</useShortClassNames>
+								</configuration>
+							</execution>
+
+							<!-- ========================= -->
+							<!-- Repository / Persistence Layer -->
+							<!-- ========================= -->
+
+							<execution>
+								<id>generate-repository-layer-diagram</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.basedir}/../../docs/diagrams</outputDirectory>
+									<outputFilename>repository-layer.puml</outputFilename>
+									<scanPackages>
+										<scanPackage>com.springboot.MyTodoList.model</scanPackage>
+										<scanPackage>com.springboot.MyTodoList.mappers</scanPackage>
+									</scanPackages>
+									<useShortClassNames>true</useShortClassNames>
+									<addJPAAnnotations>true</addJPAAnnotations>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

@@ -1,0 +1,82 @@
+@startuml
+
+class Builder {
+	{field} ~email : String
+	{field} ~id : int
+	{field} ~role : String
+	{field} ~teamId : int
+	{field} ~username : String
+	{method} +build () : User
+}
+
+
+class Builder {
+	{field} -assigneeId : int
+	{field} -attachment : String
+	{field} -description : String
+	{field} -estimatedHours : BigDecimal
+	{field} -name : String
+	{field} -priority : int
+	{field} -sprintId : int
+	{method} +assigneeId ( assigneeId : int ) : Builder
+	{method} +attachment ( attachment : String ) : Builder
+	{method} +build () : CreateTask
+	{method} +description ( description : String ) : Builder
+	{method} +estimatedHours ( estimatedHours : BigDecimal ) : Builder
+	{method} +name ( name : String ) : Builder
+	{method} +priority ( priority : int ) : Builder
+	{method} +sprintId ( sprintId : int ) : Builder
+}
+
+
+class CreateTask {
+	{field} +assigneeId : int
+	{field} +attachment : String
+	{field} +description : String
+	{field} +estimatedHours : BigDecimal
+	{field} +name : String
+	{field} +priority : int
+	{field} +sprintId : int
+	{method}  {static} +builder () : Builder
+}
+
+
+class Task {
+	{field} +ID : int
+	{field} +cost : BigDecimal
+	{field} +createdAt : OffsetDateTime
+	{field} +description : String
+	{field} +linkToFile : String
+	{field} +name : String
+	{field} +priorityID : int
+	{field} +spentHours : BigDecimal
+	{field} +sprintEndDate : OffsetDateTime
+	{field} +sprintID : int
+	{field} +sprintNumber : int
+	{field} +stateID : int
+	{field} +updatedAt : OffsetDateTime
+	{field} +userID : int
+	{field} +userName : String
+	{field} +visibility : int
+}
+
+
+class TaskRowMapper {
+	{method} +mapRow ( rs : ResultSet , rowNum : int ) : Task
+}
+
+
+class User {
+	{field} -email : String
+	{field} -id : int
+	{field} -role : String
+	{field} -teamId : int
+	{field} -username : String
+}
+
+
+
+
+
+
+@enduml

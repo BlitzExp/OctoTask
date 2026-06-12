@@ -33,12 +33,20 @@ jobs:
         working-directory: MtdrSpring/backend
         run: chmod +x ./mvnw
 
-      - name: Generate PlantUML code diagrams
+      - name: Generate PlantUML source diagrams
         working-directory: MtdrSpring/backend
         run: ./mvnw -Puml -DskipTests generate-test-sources
+
+      - name: Render PlantUML diagrams to SVG
+        uses: grassedge/generate-plantuml-action@v1.5
+        with:
+          path: docs/diagrams
+          message: "Render PlantUML diagrams"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit generated diagrams
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "docs: update generated PlantUML diagrams"
-          file_pattern: docs/diagrams/*.puml
+          file_pattern: docs/diagrams/*.puml docs/diagrams/*.svg

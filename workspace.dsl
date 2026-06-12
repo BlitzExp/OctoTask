@@ -18,44 +18,58 @@ workspace "OctoTask" "Task management platform for the Oracle MTDR program." {
                 spa = container "Web Portal" "Single-page UI; bundled into the API JAR and served as static assets." "React + Vite + TypeScript" "WebApp"
 
                 api = container "API Application" "REST backend; orchestrates users, tasks and statistics." "Spring Boot 3 / Java 17" {
-                    userCtl = component "UserController" "User CRUD and authentication endpoints." "Spring MVC" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/user-controller.puml
+                    userCtl = component "UserController" "User CRUD and authentication endpoints." "Spring MVC"
+                    taskCtl = component "TaskController" "Task CRUD, assignment and status endpoints." "Spring MVC"
+                    statsCtl = component "StadisticsController" "Team and per-user statistics endpoints." "Spring MVC"
+                    filterCtl = component "FilterController" "Endpoints for filtered task lists." "Spring MVC"
+                    dbCtl = component "DatabaseController" "Database liveness/health probe." "Spring MVC"
+
+                    userSvc = component "UserService" "User lifecycle and credential checks." "Spring Service"
+                    taskSvc = component "TaskService" "Task state machine and assignment rules." "Spring Service"
+                    statsSvc = component "StadisticsService" "Aggregates tasks per team/user for charts." "Spring Service"
+                    filterSvc = component "FilterService" "Query composition for filtered task lists." "Spring Service"
+
+                    repo = component "Repository Layer" "Spring Data JPA repositories for User and Task." "Spring Data JPA"
+
+                    # ---------- Level 4 Code Diagram Components ----------
+                    userCtlCode = component "UserController Code Diagram" "Generated Level 4 class diagram for the UserController component." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/user-controller.svg"
                     }
 
-                    taskCtl = component "TaskController" "Task CRUD, assignment and status endpoints." "Spring MVC" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/task-controller.puml
+                    taskCtlCode = component "TaskController Code Diagram" "Generated Level 4 class diagram for the TaskController component." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/task-controller.svg"
                     }
 
-                    statsCtl = component "StadisticsController" "Team and per-user statistics endpoints." "Spring MVC" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/stadistics-controller.puml
+                    statsCtlCode = component "StadisticsController Code Diagram" "Generated Level 4 class diagram for the StadisticsController component." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/stadistics-controller.svg"
                     }
 
-                    filterCtl = component "FilterController" "Endpoints for filtered task lists." "Spring MVC" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/filter-controller.puml
+                    filterCtlCode = component "FilterController Code Diagram" "Generated Level 4 class diagram for the FilterController component." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/filter-controller.svg"
                     }
 
-                    dbCtl = component "DatabaseController" "Database liveness/health probe." "Spring MVC" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/database-controller.puml
+                    dbCtlCode = component "DatabaseController Code Diagram" "Generated Level 4 class diagram for the DatabaseController component." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/database-controller.svg"
                     }
 
-                    userSvc = component "UserService" "User lifecycle and credential checks." "Spring Service" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/user-service.puml
+                    userSvcCode = component "UserService Code Diagram" "Generated Level 4 class diagram for the UserService component." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/user-service.svg"
                     }
 
-                    taskSvc = component "TaskService" "Task state machine and assignment rules." "Spring Service" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/task-service.puml
+                    taskSvcCode = component "TaskService Code Diagram" "Generated Level 4 class diagram for the TaskService component." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/task-service.svg"
                     }
 
-                    statsSvc = component "StadisticsService" "Aggregates tasks per team/user for charts." "Spring Service" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/stadistics-service.puml
+                    statsSvcCode = component "StadisticsService Code Diagram" "Generated Level 4 class diagram for the StadisticsService component." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/stadistics-service.svg"
                     }
 
-                    filterSvc = component "FilterService" "Query composition for filtered task lists." "Spring Service" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/filter-service.puml
+                    filterSvcCode = component "FilterService Code Diagram" "Generated Level 4 class diagram for the FilterService component." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/filter-service.svg"
                     }
 
-                    repo = component "Repository Layer" "Spring Data JPA repositories for User and Task." "Spring Data JPA" {
-                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/repository-layer.puml
+                    repoCode = component "Repository Layer Code Diagram" "Generated Level 4 class diagram for the repository and persistence layer." "PlantUML / SVG" {
+                        url "https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/repository-layer.svg"
                     }
                 }
             }
@@ -92,6 +106,20 @@ workspace "OctoTask" "Task management platform for the Oracle MTDR program." {
         octotask.api.dbCtl     -> octotask.api.repo "Pings"
 
         octotask.api.repo -> adb "Executes SQL" "JDBC"
+
+        # ---------- Level 4 diagram navigation relationships ----------
+        octotask.api.userCtl   -> octotask.api.userCtlCode   "Links to generated Level 4 diagram"
+        octotask.api.taskCtl   -> octotask.api.taskCtlCode   "Links to generated Level 4 diagram"
+        octotask.api.statsCtl  -> octotask.api.statsCtlCode  "Links to generated Level 4 diagram"
+        octotask.api.filterCtl -> octotask.api.filterCtlCode "Links to generated Level 4 diagram"
+        octotask.api.dbCtl     -> octotask.api.dbCtlCode     "Links to generated Level 4 diagram"
+
+        octotask.api.userSvc   -> octotask.api.userSvcCode   "Links to generated Level 4 diagram"
+        octotask.api.taskSvc   -> octotask.api.taskSvcCode   "Links to generated Level 4 diagram"
+        octotask.api.statsSvc  -> octotask.api.statsSvcCode  "Links to generated Level 4 diagram"
+        octotask.api.filterSvc -> octotask.api.filterSvcCode "Links to generated Level 4 diagram"
+
+        octotask.api.repo      -> octotask.api.repoCode      "Links to generated Level 4 diagram"
 
         # ---------- Program-level relationships (visible in Landscape only) ----------
         # None of these touch OctoTask at runtime, so they don't appear in the Context view.

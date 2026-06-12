@@ -1,0 +1,14 @@
+@startuml
+
+class FilterController {
+	{field} -filterService : FilterService
+	{method} +getAllSprints ( teamId : Long ) : ResponseEntity
+	{method} +getTeamMembers ( teamId : Long ) : ResponseEntity
+}
+
+
+
+
+
+
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+
+class UserController {
+	{field} -userService : UserService
+	{method} +checkDuplicates ( userData : Map ) : ResponseEntity
+	{method} +createUser ( userData : Map ) : ResponseEntity
+	{method} +loginUser ( userData : Map ) : ResponseEntity
+}
+
+
+
+
+
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+
+class StadisticsController {
+	{field} -stadisticsService : StadisticsService
+	{method} +getAverageHoursPerMember ( teamId : String ) : ResponseEntity
+	{method} +getAverageTasksPerStatusPerTeam ( teamId : String ) : ResponseEntity
+	{method} +getCompletedTasksByMemberPerSprint ( teamId : String ) : ResponseEntity
+	{method} +getLateTasks ( teamId : String , sprintId : String ) : ResponseEntity
+	{method} +getLateTasksAll ( teamId : String ) : ResponseEntity
+	{method} +getMemberStatusBreak ( teamId : String , sprintId : String ) : ResponseEntity
+	{method} +getNumCompletedTasks ( teamId : String , sprintId : String ) : ResponseEntity
+	{method} +getNumCompletedTasksAll ( teamId : String ) : ResponseEntity
+	{method} +getNumPendingTasks ( teamId : String , sprintId : String ) : ResponseEntity
+	{method} +getNumPendingTasksAll ( teamId : String ) : ResponseEntity
+	{method} +getNumTasks ( teamId : String , sprintId : String ) : ResponseEntity
+	{method} +getNumTasksAll ( teamId : String ) : ResponseEntity
+	{method} +getWorkHours ( teamId : String , sprintId : String ) : ResponseEntity
+	{method} +getWorkHoursByMemberPerSprint ( teamId : String ) : ResponseEntity
+}
+
+
+
+
+
+
+@enduml

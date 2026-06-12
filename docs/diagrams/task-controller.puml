@@ -1,0 +1,18 @@
+@startuml
+
+class TaskController {
+	{field} -taskService : TaskService
+	{method} +createNewTask ( taskData : CreateTask ) : ResponseEntity
+	{method} +deleteTaskLogically ( taskId : int ) : ResponseEntity
+	{method} +getTeamTasks ( teamId : int ) : ResponseEntity
+	{method} +getUserTasks ( userId : int ) : ResponseEntity
+	{method}  {static} -rootCauseMessage ( throwable : Throwable ) : String
+	{method} +updateTask ( taskId : int , taskData : Task ) : ResponseEntity
+}
+
+
+
+
+
+
+@enduml

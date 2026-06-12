@@ -1,0 +1,14 @@
+@startuml
+
+class FilterService {
+	{field} -jdbcTemplate : JdbcTemplate
+	{method} +getAllSprintsByTeamId ( teamId : Long ) : Object
+	{method} +getTeamMembersByTeamId ( teamId : Long ) : Object
+}
+
+
+
+
+
+
+@enduml

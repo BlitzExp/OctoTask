@@ -31,19 +31,14 @@ jobs:
             exit 1
           fi
 
-          if [ "${{ github.event.pull_request.head.ref }}" != "dev" ]; then
-            echo "Only PRs from dev to main are allowed."
-            exit 1
-          fi
-
           if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
             echo "PRs to main must come from this repository, not a fork."
             exit 1
           fi
 
-          if [ "${{ github.event.pull_request.user.login }}" != "github-actions[bot]" ]; then
-            echo "Only the automated Promote Dev to Main workflow may create PRs into main."
+          if [ "${{ github.event.pull_request.user.login }}" = "github-actions[bot]" ] && [ "${{ github.event.pull_request.head.ref }}" != "dev" ]; then
+            echo "Automated promotion PRs into main must use the dev branch."
             exit 1
           fi
 
-          echo "Valid automated dev to main promotion PR."
+          echo "Valid PR source for main."

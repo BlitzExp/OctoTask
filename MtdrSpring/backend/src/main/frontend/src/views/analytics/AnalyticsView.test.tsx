@@ -25,6 +25,10 @@ import {
 // Mock Modules
 vi.mock("../../controller/filterController", () => ({
   getAllSprintsController: vi.fn(),
+  getTeamMatesController: vi.fn().mockResolvedValue([
+    { id: 1, name: "Ana" },
+    { id: 2, name: "Luis" },
+  ]),
 }));
 
 vi.mock("../../controller/analyticsController", () => ({
@@ -199,8 +203,8 @@ describe("AnalyticsView Component", () => {
     );
 
     expect(await screen.findByText("Analytics")).toBeInTheDocument();
-    expect(screen.getByText("Time Range:")).toBeInTheDocument();
-    expect(screen.getByRole("combobox")).toBeInTheDocument();
+    expect(screen.getByText("Sprint")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /select sprint/i })).toBeInTheDocument();
   });
 
   test("renders team and per-person KPIs for a selected sprint", async () => {
@@ -217,9 +221,9 @@ describe("AnalyticsView Component", () => {
       expect(fetchWorkHours).toHaveBeenCalledWith(7, "s1");
     });
 
-    expect(screen.getByText("Missing & On Going Tasks")).toBeInTheDocument();
-    expect(screen.getByText("Completed Tasks")).toBeInTheDocument();
-    expect(screen.getByText("Late Tasks")).toBeInTheDocument();
+    expect(screen.getByText("Active tasks")).toBeInTheDocument();
+    expect(screen.getByText("Completed")).toBeInTheDocument();
+    expect(screen.getByText("Overdue")).toBeInTheDocument();
   });
 
   test("switches to all-sprints mode and loads aggregate weekly/sprint KPIs", async () => {
@@ -243,8 +247,6 @@ describe("AnalyticsView Component", () => {
       expect(calculateKPIAVG).toHaveBeenCalled();
     });
 
-    expect(
-      screen.getByText("Tasks Completed by Developer per Sprint"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Completed by sprint")).toBeInTheDocument();
   });
 });

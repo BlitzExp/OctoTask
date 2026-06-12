@@ -12,20 +12,29 @@ function FilterHeader({
 	assigneeOptions,
 }) {
 	return (
-		<div className="fh-container">
-			<div className="fh-actions">
-				<button className="fh-filter-button" onClick={onToggle}>
-					{isOpen ? 'Hide Filters' : 'Filter'}
-				</button>
-				{hasActiveFilters && (
-					<button className="fh-clear-button" onClick={onClear}>
-						Clear
+		<div className="fh-wrapper">
+			<div className="fh-container">
+				<div className="fh-actions">
+				<button
+					className="fh-filter-button"
+					type="button"
+					data-active={hasActiveFilters ? 'true' : 'false'}
+					aria-expanded={isOpen}
+					aria-controls="fh-panel"
+					onClick={onToggle}
+				>
+						{isOpen ? 'Close filters' : 'Narrow the swim'}
 					</button>
-				)}
+					{hasActiveFilters && (
+						<button className="fh-clear-button" onClick={onClear}>
+							Reset
+						</button>
+					)}
+				</div>
 			</div>
 
 			{isOpen && (
-				<section className="fh-panel">
+				<section id="fh-panel" className="fh-panel" aria-label="Task filters">
 					<div className="fh-row">
 						<label htmlFor="fh-title-filter">Title contains</label>
 						<input

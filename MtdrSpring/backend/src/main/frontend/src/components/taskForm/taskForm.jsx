@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 import './taskForm.css';
 
 
-function TaskForm({ teamId, isOpen, onClose, updateTaskList }) {
+function TaskForm({ teamId, isOpen, onClose, updateTaskList, taskTitle = 'Add to the board' }) {
   const [taskName, setTaskName] = useState('');
   const [description, setDescription] = useState('');
   const [assigneeId, setAssigneeId] = useState('');
@@ -19,6 +19,8 @@ function TaskForm({ teamId, isOpen, onClose, updateTaskList }) {
 
   const [teamMembers, setTeamMembers] = useState([]);  
   const [sprints, setSprints] = useState([]);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     try {
@@ -39,6 +41,8 @@ function TaskForm({ teamId, isOpen, onClose, updateTaskList }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setError('');
+    setSubmitting(true);
 
     const newTaskData = {
       assigneeId,
@@ -64,17 +68,21 @@ function TaskForm({ teamId, isOpen, onClose, updateTaskList }) {
       if (typeof updateTaskList === 'function') {
         updateTaskList(newTask);
       }
-    } catch (error) {
-      console.error("Error creating task:", error);
+    } catch (err) {
+      console.error("Error creating task:", err);
+      setError(err?.message || 'Could not create the task. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   }
 
   return ReactDOM.createPortal(
+    <div data-theme="app-light">
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         
         <div className="modal-header">
-          <span className="task-id">Create New Task</span>
+          <span className="task-id">{taskTitle}</span>
           <button className="close-button" onClick={onClose}>✕</button>
         </div>
 
@@ -184,13 +192,17 @@ function TaskForm({ teamId, isOpen, onClose, updateTaskList }) {
                 />
               </div>
             <div className="sidebar-footer">
-              <button type="submit" className="modal-submit-btn">Create Task</button>
+              {error && <p className="modal-form-error" role="alert">{error}</p>}
+              <button type="submit" className="modal-submit-btn" disabled={submitting}>
+                {submitting ? 'Adding…' : 'Add to the board'}
+              </button>
             </div>
 
           </div>
 
         </form>
       </div>
+    </div>
     </div>,
     document.body
   );

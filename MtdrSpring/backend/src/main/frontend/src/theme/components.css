@@ -1,0 +1,23 @@
+/* Shared visual primitives — target existing class names where possible */
+
+.btn-primary-gradient {
+  border: 1px solid transparent;
+  background: var(--gradient-primary) padding-box, linear-gradient(#ffffff, #ffffff) border-box;
+  color: var(--color-text-on-primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter var(--transition-base), transform var(--transition-fast);
+}
+
+.btn-primary-gradient:hover {
+  filter: brightness(1.08);
+}
+
+.btn-primary-gradient:active {
+  filter: brightness(0.95);
+}
+
+.icon-muted {
+  color: var(--color-text-on-primary);
+  flex-shrink: 0;
+}

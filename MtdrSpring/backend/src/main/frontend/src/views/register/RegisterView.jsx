@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import './RegisterView.css';
 import { registerUser } from '../../controller/registerController';
 
-import logo from '../../assets/logo.png';
+import PasswordInput from '../../components/auth/PasswordInput';
+import AuthBrandPanel from '../../components/brand/AuthBrandPanel';
+import { OCTOBUDDY_IMAGES, pickRandomImageKeys } from '../../components/brand/OctoBuddyDecor';
+import OctoMascot from '../../components/brand/OctoMascot';
 
 function RegisterView({ onRegister, onBackToLogin }) {
   const [username, setUsername] = useState('');
@@ -10,106 +13,129 @@ function RegisterView({ onRegister, onBackToLogin }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('');
-  const [setError] = useState('');
+  const [error, setError] = useState('');
+  const formBuddy = useMemo(() => pickRandomImageKeys(1)[0] ?? 'party', []);
 
   async function handleSubmit(event) {
+    event.preventDefault();
+    setError('');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
     try {
-      event.preventDefault();
-      if (password !== confirmPassword) {
-        setError('Passwords do not match.');
-        return;
-      }
       const userData = await registerUser(username, email, password, role);
       if (userData) {
         onRegister(userData);
       } else {
         setError('Registration failed. Please try again.');
       }
-    } catch (error) {
-      setError('An error occurred during registration. Please try again.');
+    } catch (err) {
+      setError(err?.message || 'An error occurred during registration. Please try again.');
     }
   }
 
   return (
-    <div class="registerViewContainer">
-      <div class="registerContainer">
-        <form onSubmit={handleSubmit}>
-
-          <div class="card-header">
-            <div class="brand-title">
-              <img src={logo} alt="OctoTask" class="brand-icon" />
-              <h2 class="brand-text">OCTO</h2>
-              <h2 class="brand-text2">TASK</h2>
+    <div className="auth-split auth-split--register registerViewContainer">
+      <AuthBrandPanel variant="register" />
+      <div className="auth-form-panel">
+        <img src={OCTOBUDDY_IMAGES[formBuddy]} alt="" className="auth-form-buddy auth-form-buddy--party" aria-hidden="true" />
+        <div className="auth-form-buddy auth-form-buddy--svg" aria-hidden="true">
+          <OctoMascot mood="celebrate" size={52} />
+        </div>
+        <section className="auth-card" aria-labelledby="register-heading">
+          <header className="auth-card-header">
+            <p className="auth-card-eyebrow">Join the pod</p>
+            <h2 id="register-heading" className="auth-card-title">Create account</h2>
+            <p className="auth-card-lede">
+              A few details and OctoBuddy will have you swimming in no time.
+            </p>
+          </header>
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="inputGroup">
+              <label className="registerLabel" htmlFor="email">Email</label>
+              <input
+                className="registerInput"
+                id="email"
+                type="text"
+                autoComplete="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
-            <p class="brand-subtitle">More arms for your tasks</p>
-          </div>
-
-           <div class="inputGroup">
-            <label class="registerLabel">Email:</label>
-            <input class="registerInput"
-              id="email"
-              type="text"
-              placeholder="Email..."
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div class="inputGroup">
-            <label class="registerLabel">Username:</label>
-            <input class="registerInput"
-              id="username"
-              type="text"
-              placeholder="Username..."
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-
-          <div class="inputGroup">
-            <label class="registerLabel">Password:</label>
-            <input class="registerInput"
+            <div className="inputGroup">
+              <label className="registerLabel" htmlFor="username">Username</label>
+              <input
+                className="registerInput"
+                id="username"
+                type="text"
+                autoComplete="username"
+                placeholder="Choose a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <PasswordInput
               id="password"
-              type="password"
-              placeholder="Password..."
+              label="Password"
+              labelClassName="registerLabel"
+              inputClassName="registerInput"
+              autoComplete="new-password"
+              placeholder="Create a password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
-          </div>
-
-          <div class="inputGroup">
-            <label class="registerLabel">Confirm Password:</label>
-            <input class="registerInput"
+            <PasswordInput
               id="confirmPassword"
-              type="password"
-              placeholder="Confirm Password..."
+              label="Confirm password"
+              labelClassName="registerLabel"
+              inputClassName="registerInput"
+              autoComplete="new-password"
+              placeholder="Confirm password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              required
             />
-          </div>
-
-          <div class="inputGroup">
-            <label class="registerLabel">Role:</label>
-            <select 
-              class="registerInput"
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              required
-            >
-              <option value="" disabled hidden>Select your role...</option>              
-              <option value="user">Developer</option>
-              <option value="admin">Manager</option>
-            </select>
-          </div>
-
-          <button type="submit" class="registerButton">Create Account</button>
-          <span class="underlinedText" onClick={() => onBackToLogin('login')}> Log In </span>
-        </form>
+            <div className="inputGroup">
+              <label className="registerLabel" htmlFor="role">Role</label>
+              <select
+                className="registerInput"
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+              >
+                <option value="" disabled hidden>
+                  Select your role
+                </option>
+                <option value="user">Developer</option>
+                <option value="admin">Manager</option>
+              </select>
+            </div>
+            {error && (
+              <p className="auth-form-error" role="alert">
+                {error}
+              </p>
+            )}
+            <button type="submit" className="registerButton auth-submit-btn">
+              Join OctoBuddy
+            </button>
+          </form>
+          <footer className="auth-card-footer">
+            <p className="auth-card-footer-text">
+              Already have an account?{' '}
+              <button
+                type="button"
+                className="auth-text-link"
+                onClick={() => onBackToLogin('login')}
+              >
+                Sign in
+              </button>
+            </p>
+          </footer>
+        </section>
       </div>
     </div>
   );

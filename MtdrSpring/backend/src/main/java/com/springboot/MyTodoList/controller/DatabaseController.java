@@ -1,5 +1,7 @@
 package com.springboot.MyTodoList.controller;
 
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,17 +20,22 @@ public class DatabaseController {
 
     private final DataSource dataSource;
     private final JdbcTemplate jdbcTemplate;
+    private final Environment environment;
 
-    public DatabaseController(DataSource dataSource, JdbcTemplate jdbcTemplate) {
+    public DatabaseController(DataSource dataSource, JdbcTemplate jdbcTemplate, Environment environment) {
         this.dataSource = dataSource;
         this.jdbcTemplate = jdbcTemplate;
+        this.environment = environment;
     }
 
     @GetMapping("/ping")
     public ResponseEntity<Map<String, Object>> ping() {
         try (Connection connection = dataSource.getConnection()) {
             boolean connectionValid = connection.isValid(5);
-            Integer queryResult = jdbcTemplate.queryForObject("SELECT 1 FROM DUAL", Integer.class);
+            String pingSql = environment.acceptsProfiles(Profiles.of("local"))
+                    ? "SELECT 1"
+                    : "SELECT 1 FROM DUAL";
+            Integer queryResult = jdbcTemplate.queryForObject(pingSql, Integer.class);
 
             return ResponseEntity.ok(Map.of(
                     "status", "ok",

@@ -5,10 +5,15 @@ import TaskDashboard from './taskDashboard';
 import { setUpUserEvent } from '../../testUtils/setUpUserEvent';
 import { getAllTasks, fetchTeamTasksCon } from '../../controller/tasksViewController';
 
-// Mock Modules
 vi.mock('../../controller/tasksViewController', () => ({
   getAllTasks: vi.fn(),
   fetchTeamTasksCon: vi.fn(),
+  updateTaskController: vi.fn(),
+}));
+
+vi.mock('../../controller/filterController', () => ({
+  getAllSprintsController: vi.fn().mockResolvedValue([]),
+  getTeamMatesController: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../../components/task/taskCard', () => ({
@@ -56,6 +61,7 @@ vi.mock('../../components/taskForm/taskForm', () => ({
           onClick={() =>
             updateTaskList({
               id: 700,
+              userId: 1,
               assigneeId: 1,
               name: 'Realtime Added Task',
               userName: 'Realtime Dev',
@@ -79,6 +85,7 @@ vi.mock('../../components/taskForm/taskForm', () => ({
 function buildTask(overrides: Partial<any> = {}) {
   const task = {
     id: 1,
+    userId: overrides.userId ?? 1,
     name: 'Initial Task',
     userName: 'Diego',
     cost: 3,
@@ -87,13 +94,11 @@ function buildTask(overrides: Partial<any> = {}) {
     sprintEndDate: '2030-01-01',
     getPriorityLabel: () => 'M',
     getStateLabel: () => {
-    const states: Record<number, string> = { 1: 'Done', 2: 'Pending', 3: 'On Going', 4: 'Late' };
-    return states[task.stateId] || 'Pending';
+      const states: Record<number, string> = { 1: 'Done', 2: 'Pending', 3: 'On Going', 4: 'Late' };
+      return states[task.stateId] || 'Pending';
     },
     ...overrides,
   };
-
-  
 
   return task;
 }
@@ -105,9 +110,14 @@ describe('TaskDashboard Component', () => {
 
   test.each([
     ['admin', fetchTeamTasksCon, getAllTasks],
+    ['manager', fetchTeamTasksCon, getAllTasks],
     ['developer', getAllTasks, fetchTeamTasksCon],
   ])('loads role-aware dashboard data for %s users', async (role, expectedLoader, unexpectedLoader) => {
-    const task = buildTask({ id: role === 'admin' ? 100 : 200, name: `${role}-task` });
+    const task = buildTask({
+      id: role === 'developer' ? 200 : 100,
+      userId: role === 'developer' ? 9 : 1,
+      name: `${role}-task`,
+    });
 
     vi.mocked(fetchTeamTasksCon).mockResolvedValue([task]);
     vi.mocked(getAllTasks).mockResolvedValue([task]);
@@ -119,55 +129,45 @@ describe('TaskDashboard Component', () => {
     });
 
     expect(unexpectedLoader).not.toHaveBeenCalled();
-    
-    const taskCard: HTMLElement = await screen.findByText(/Task:.*Developer:/i);
+
+    const taskCard = await screen.findByText(/Task:.*Developer:/i);
     expect(taskCard).toBeInTheDocument();
   });
 
-  test('supports real-time task display and creation flow for assigned users', async () => {
-    vi.mocked(getAllTasks).mockResolvedValue([buildTask({ id: 2, name: 'Assigned Existing' })]);
+  // Post-create list updates are admin-only by design; developers rely on role-scoped visibility.
+  test('admin sees newly created tasks on the board immediately', async () => {
+    vi.mocked(fetchTeamTasksCon).mockResolvedValue([buildTask({ id: 2, name: 'Assigned Existing', userId: 1 })]);
 
     const { user } = setUpUserEvent(
-      <TaskDashboard user={{ id: 1, role: 'developer', teamId: 77, username: 'worker-1' }} />,
+      <TaskDashboard user={{ id: 1, role: 'admin', teamId: 77, username: 'admin-1' }} />,
     );
 
-    const existingTask: HTMLElement = await screen.findByText(/Assigned Existing/);
-    expect(existingTask).toBeInTheDocument();
+    expect(await screen.findByText(/Assigned Existing/)).toBeInTheDocument();
 
-    const createBtn: HTMLElement = screen.getByRole('button', { name: /create task/i });
-    await user.click(createBtn);
+    await user.click(screen.getByRole('button', { name: /add to the board/i }));
+    await user.click(screen.getByRole('button', { name: /add mock task/i }));
 
-    const mockTaskBtn: HTMLElement = screen.getByRole('button', { name: /add mock task/i });
-    await user.click(mockTaskBtn);
-
-    const newTask: HTMLElement = await screen.findByText(/Realtime Added Task/);
-    expect(newTask).toBeInTheDocument();
+    expect(await screen.findByText(/Realtime Added Task/)).toBeInTheDocument();
   });
 
   test('marks a task as completed and reflects task state and field changes', async () => {
     vi.mocked(getAllTasks).mockResolvedValue([
-      buildTask({ id: 11, name: 'Implement API', stateId: 2, spentHours: 0 }),
+      buildTask({ id: 11, userId: 3, name: 'Implement API', stateId: 2, spentHours: 0 }),
     ]);
 
     const { user } = setUpUserEvent(
       <TaskDashboard user={{ id: 3, role: 'developer', teamId: 88, username: 'dev-3' }} />,
     );
 
-    const openTaskBtn: HTMLElement = await screen.findByRole('button', { name: /open-11/i });
-    await user.click(openTaskBtn);
-    
-    const editLabel: HTMLElement = screen.getByText(/Editing:Implement API/);
-    expect(editLabel).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: /open-11/i }));
 
-    const saveDoneBtn: HTMLElement = screen.getByRole('button', { name: /save as done/i });
-    await user.click(saveDoneBtn);
+    expect(screen.getByText(/Editing:Implement API/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /save as done/i }));
 
     await waitFor(() => {
       expect(screen.queryByText(/Editing:Implement API/)).not.toBeInTheDocument();
     });
-
-    const completedTab: HTMLElement = screen.getByText('Completed');
-    await user.click(completedTab);
 
     expect(await screen.findByText(/Done Ticket/)).toBeInTheDocument();
     expect(screen.getByText(/Developer:Alex QA/)).toBeInTheDocument();
@@ -175,10 +175,8 @@ describe('TaskDashboard Component', () => {
   });
 
   test('works with context and a custom hook while user interacts with dashboard filters', async () => {
-    // Testing with Contexts
     const UserContext = createContext<any>(null);
 
-    // Testing Custom Hooks
     function useCompletedCount(tasks: Array<{ getStateLabel: () => string }>) {
       return useMemo(() => tasks.filter((task) => task.getStateLabel() === 'Done').length, [tasks]);
     }
@@ -199,25 +197,18 @@ describe('TaskDashboard Component', () => {
     }
 
     vi.mocked(getAllTasks).mockResolvedValue([
-      buildTask({ id: 54, name: 'Pending Ticket', stateId: 2 }),
-      buildTask({ id: 55, name: 'Done Ticket Sprint', stateId: 1, spentHours: 4 }),
+      buildTask({ id: 54, userId: 44, name: 'Pending Ticket', stateId: 2 }),
+      buildTask({ id: 55, userId: 44, name: 'Done Ticket Sprint', stateId: 1, spentHours: 4 }),
     ]);
 
-    const { user } = setUpUserEvent(
+    setUpUserEvent(
       <UserContext.Provider value={{ id: 44, role: 'developer', teamId: 12, username: 'ctx-user' }}>
         <ContextDrivenDashboard />
       </UserContext.Provider>,
     );
 
-    const countLabel: HTMLElement = await screen.findByText('CompletedCount:1');
-    expect(countLabel).toBeInTheDocument();
-
-    const pendingTab: HTMLElement = screen.getByText('Pending');
-    await user.click(pendingTab);
+    expect(await screen.findByText('CompletedCount:1')).toBeInTheDocument();
     expect(screen.getByText(/Pending Ticket/)).toBeInTheDocument();
-
-    const completedTab: HTMLElement = screen.getByText('Completed');
-    await user.click(completedTab);
     expect(screen.getByText(/Done Ticket Sprint/)).toBeInTheDocument();
   });
 });

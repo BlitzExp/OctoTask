@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import './LoginView.css';
 import { handleLogin } from '../../controller/logInController';
-
-import logo from '../../assets/logo.png';
+import PasswordInput from '../../components/auth/PasswordInput';
+import AuthBrandPanel from '../../components/brand/AuthBrandPanel';
+import { OCTOBUDDY_IMAGES, pickRandomImageKeys } from '../../components/brand/OctoBuddyDecor';
+import OctoMascot from '../../components/brand/OctoMascot';
 
 function LoginView({ onLogin, onGoToRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const formBuddy = useMemo(() => pickRandomImageKeys(1)[0] ?? 'wave', []);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -19,52 +22,81 @@ function LoginView({ onLogin, onGoToRegister }) {
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('An error occurred during login. Please try again later.');
+      const message =
+        error?.message === 'Invalid credentials'
+          ? 'Login failed. Please check your username and password.'
+          : error?.message?.startsWith('Cannot reach the API')
+            ? error.message
+            : 'An error occurred during login. Please try again later.';
+      alert(message);
     }
   }
 
   return (
-    <main>
-      <div class="loginContainer">
-        <form onSubmit={handleSubmit}>
+    <div className="auth-split auth-split--login">
+      <AuthBrandPanel variant="login" />
 
-          <div class="card-header">
-            <div class="brand-title">
-              <img src={logo} alt="OctoTask" class="brand-icon" />
-              <h2 class="brand-text">OCTO</h2>
-              <h2 class="brand-text2">Task</h2>
+      <div className="auth-form-panel">
+        <img src={OCTOBUDDY_IMAGES[formBuddy]} alt="" className="auth-form-buddy auth-form-buddy--wave" aria-hidden="true" />
+        <div className="auth-form-buddy auth-form-buddy--svg" aria-hidden="true">
+          <OctoMascot mood="chill" size={48} />
+        </div>
+        <section className="auth-card" aria-labelledby="login-heading">
+          <header className="auth-card-header">
+            <p className="auth-card-eyebrow">Hey, welcome back</p>
+            <h2 id="login-heading" className="auth-card-title">Sign in</h2>
+            <p className="auth-card-lede">
+              Your OctoBuddy workspace is ready when you are.
+            </p>
+          </header>
+
+          <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <div className="inputGroup">
+              <label className="loginLabel" htmlFor="username">
+                Username or email
+              </label>
+              <input
+                className="loginInput"
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                placeholder="you@company.com"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
             </div>
-            <p class="brand-subtitle">More arms for your tasks</p>
-          </div>
-          
-          <div class="inputGroup">
-            <label class="loginLabel">Username or Email:</label>
-            <input class="loginInput"
-              id="username"
-              type="text"
-              placeholder="Username..."
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-
-          <div class="inputGroup">
-            <label class="loginLabel">Password:</label>
-            <input class="loginInput"
+            <PasswordInput
               id="password"
-              type="password"
-              placeholder="Password..."
+              label="Password"
+              labelClassName="loginLabel"
+              inputClassName="loginInput"
+              autoComplete="current-password"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
-          </div>
-          <button type="submit" class="loginButton">Sign In</button>
-          <span class="underlinedText" onClick={ () => onGoToRegister('register')}> Register </span>
-        </form>
+            <button type="submit" className="loginButton auth-submit-btn">
+              Dive in
+            </button>
+          </form>
+
+          <footer className="auth-card-footer">
+            <p className="auth-card-footer-text">
+              New to the pod?{' '}
+              <button
+                type="button"
+                className="auth-text-link"
+                onClick={() => onGoToRegister('register')}
+              >
+                Create an account
+              </button>
+            </p>
+          </footer>
+        </section>
       </div>
-    </main>
+    </div>
   );
 }
 

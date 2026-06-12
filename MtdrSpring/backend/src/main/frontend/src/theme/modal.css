@@ -1,0 +1,169 @@
+/* Unified modal shell — create + edit */
+
+.modal-overlay,
+.tu-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(22, 21, 19, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.modal-content,
+.tu-modal-content {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  width: min(1100px, 96vw);
+  max-height: 90vh;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font-family-sans);
+}
+
+.modal-header,
+.tu-modal-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
+  flex-shrink: 0;
+}
+
+.tu-modal-header {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.tu-modal-header-input {
+  flex: 1;
+  height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-md);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 20px;
+  padding: var(--space-2);
+}
+
+.close-button:hover {
+  color: var(--color-danger);
+}
+
+.modal-body,
+.tu-modal-content .modal-task-info {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modal-main {
+  flex: 2;
+  padding: var(--space-6);
+  overflow-y: auto;
+}
+
+.modal-sidebar {
+  flex: 1;
+  padding: var(--space-6);
+  border-left: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
+  overflow-y: auto;
+}
+
+.modal-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.modal-input,
+.modal-input[type='text'] {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-md);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.modal-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.modal-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.modal-submit-btn,
+.tu-btn-save {
+  height: 36px;
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.modal-submit-btn:hover,
+.tu-btn-save:hover {
+  background: var(--color-primary-hover);
+}
+
+.tu-btn-close {
+  height: 36px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+}
+
+.tu-btn-delete {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: var(--color-danger-muted);
+}
+
+.tu-modal-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+.task-id {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}

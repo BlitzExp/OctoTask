@@ -1,81 +1,49 @@
 import API_LIST from '../API';
 
-function ensureOk(response) {
-  if (!response.ok) {
-    throw new Error('Something went wrong ...');
+async function parseErrorMessage(response) {
+  try {
+    const data = await response.json();
+    return data?.message || `Request failed (HTTP ${response.status})`;
+  } catch {
+    return `Request failed (HTTP ${response.status})`;
   }
-  return response;
 }
 
-export function checkDuplicates(username, email) {
-  return fetch(API_LIST + '/users/Check', {
+export async function checkDuplicates(username, email) {
+  const response = await fetch(API_LIST + '/users/Check', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ username, email })
-  }).then(ensureOk);
-}
+    body: JSON.stringify({ username, email }),
+  });
 
-export function createUser(username, email, password, role) {
-  return fetch(API_LIST + '/users/CreateUser', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ username, email, password, role })
-  }).then(ensureOk)
-    .then((response) => response.json());
-}
-
-/* Example 
-
-import API_LIST from '../API';
-
-function ensureOk(response) {
-  if (!response.ok) {
-    throw new Error('Something went wrong ...');
+  if (response.ok) {
+    return { available: true };
   }
-  return response;
+
+  if (response.status === 409) {
+    const message = await parseErrorMessage(response);
+    return { available: false, message };
+  }
+
+  const message = await parseErrorMessage(response);
+  throw new Error(message);
 }
 
-export function fetchTodos() {
-  return fetch(API_LIST)
-    .then(ensureOk)
-    .then((response) => response.json());
-}
-
-export function fetchTodoById(id) {
-  return fetch(`${API_LIST}/${id}`)
-    .then(ensureOk)
-    .then((response) => response.json());
-}
-
-export function createTodo(description) {
-  return fetch(API_LIST, {
+export async function createUser(username, email, password, role) {
+  const response = await fetch(API_LIST + '/users/CreateUser', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ description })
-  }).then(ensureOk);
+    body: JSON.stringify({ username, email, password, role }),
+  });
+
+  if (!response.ok) {
+    const message = await parseErrorMessage(response);
+    throw new Error(message);
+  }
+
+  return response.json();
 }
-
-export function updateTodo(id, description, done) {
-  return fetch(`${API_LIST}/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ description, done })
-  }).then(ensureOk);
-}
-
-export function deleteTodo(id) {
-  return fetch(`${API_LIST}/${id}`, {
-    method: 'DELETE'
-  }).then(ensureOk);
-}
-
-
-*/

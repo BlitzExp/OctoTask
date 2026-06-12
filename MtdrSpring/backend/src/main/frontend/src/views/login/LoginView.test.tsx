@@ -9,7 +9,6 @@ vi.mock('../../API', () => ({
   default: 'http://localhost:8080/api',
 }));
 
-// Mocking HTTP requests with Mock Service Worker
 const server = setupServer(
   rest.post('http://localhost:8080/api/users/Login', async (req, res, ctx) => {
     const body = await req.json();
@@ -31,19 +30,17 @@ afterAll(() => server.close());
 
 describe('LoginView Component', () => {
   test('submits happy-path login and calls onLogin with user payload', async () => {
-    const onLogin = vi.fn(); // Mock function (fn)
+    const onLogin = vi.fn();
     const onGoToRegister = vi.fn();
 
     const { user } = setUpUserEvent(
       <LoginView onLogin={onLogin} onGoToRegister={onGoToRegister} />,
     );
 
-    // Strict HTMLElement typing from pattern
-    const usernameInput: HTMLElement = screen.getByPlaceholderText(/username/i);
-    const passwordInput: HTMLElement = screen.getByPlaceholderText(/password/i);
-    const submitButton: HTMLElement = screen.getByRole('button', { name: /sign in/i });
+    const usernameInput = screen.getByPlaceholderText(/you@company.com/i);
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+    const submitButton = screen.getByRole('button', { name: /dive in/i });
 
-    // Form Testing (user type events)
     await user.type(usernameInput, 'worker');
     await user.type(passwordInput, 'secret');
     await user.click(submitButton);
@@ -60,15 +57,15 @@ describe('LoginView Component', () => {
 
   test('alerts when credentials are invalid', async () => {
     const onLogin = vi.fn();
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {}); // Mock function (spy)
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
 
     const { user } = setUpUserEvent(
       <LoginView onLogin={onLogin} onGoToRegister={vi.fn()} />,
     );
 
-    const usernameInput: HTMLElement = screen.getByPlaceholderText(/username/i);
-    const passwordInput: HTMLElement = screen.getByPlaceholderText(/password/i);
-    const submitButton: HTMLElement = screen.getByRole('button', { name: /sign in/i });
+    const usernameInput = screen.getByPlaceholderText(/you@company.com/i);
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+    const submitButton = screen.getByRole('button', { name: /dive in/i });
 
     await user.type(usernameInput, 'worker');
     await user.type(passwordInput, 'wrong');
@@ -89,9 +86,9 @@ describe('LoginView Component', () => {
       <LoginView onLogin={vi.fn()} onGoToRegister={onGoToRegister} />,
     );
 
-    const registerLink: HTMLElement = screen.getByText(/register/i);
+    const registerLink = screen.getByRole('button', { name: /create an account/i });
     await user.click(registerLink);
-    
+
     expect(onGoToRegister).toHaveBeenCalledWith('register');
   });
 });

@@ -16,6 +16,7 @@
 
 | Category | Status | Notes |
 |----------|--------|-------|
+| `src/theme/**` | PASS | New: `tokens.css`, `global.css`, `shell.css`, `auth.css`, `modal.css`, `components.css`, `charts.js` |
 | `src/**/*.css` | PASS | All co-located CSS updated for light workspace / auth |
 | `src/index.js` | PASS | Theme import order only |
 | `App.js`, `Background.jsx`, `headerStart.jsx`, `sideMenu.jsx` | PASS | Shell wrappers + `data-theme`; no handler changes |

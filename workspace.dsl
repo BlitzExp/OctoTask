@@ -18,19 +18,45 @@ workspace "OctoTask" "Task management platform for the Oracle MTDR program." {
                 spa = container "Web Portal" "Single-page UI; bundled into the API JAR and served as static assets." "React + Vite + TypeScript" "WebApp"
 
                 api = container "API Application" "REST backend; orchestrates users, tasks and statistics." "Spring Boot 3 / Java 17" {
+                    userCtl = component "UserController" "User CRUD and authentication endpoints." "Spring MVC" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/user-controller.puml
+                    }
 
-                    userCtl    = component "UserController"        "User CRUD and authentication endpoints."        "Spring MVC"
-                    taskCtl    = component "TaskController"        "Task CRUD, assignment and status endpoints."    "Spring MVC"
-                    statsCtl   = component "StadisticsController"  "Team and per-user statistics endpoints."        "Spring MVC"
-                    filterCtl  = component "FilterController"      "Endpoints for filtered task lists."             "Spring MVC"
-                    dbCtl      = component "DatabaseController"    "Database liveness/health probe."                "Spring MVC"
+                    taskCtl = component "TaskController" "Task CRUD, assignment and status endpoints." "Spring MVC" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/task-controller.puml
+                    }
 
-                    userSvc    = component "UserService"           "User lifecycle and credential checks."          "Spring Service"
-                    taskSvc    = component "TaskService"           "Task state machine and assignment rules."       "Spring Service"
-                    statsSvc   = component "StadisticsService"     "Aggregates tasks per team/user for charts."     "Spring Service"
-                    filterSvc  = component "FilterService"         "Query composition for filtered task lists."     "Spring Service"
+                    statsCtl = component "StadisticsController" "Team and per-user statistics endpoints." "Spring MVC" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/stadistics-controller.puml
+                    }
 
-                    repo       = component "Repository Layer"      "Spring Data JPA repositories for User and Task." "Spring Data JPA"
+                    filterCtl = component "FilterController" "Endpoints for filtered task lists." "Spring MVC" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/filter-controller.puml
+                    }
+
+                    dbCtl = component "DatabaseController" "Database liveness/health probe." "Spring MVC" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/database-controller.puml
+                    }
+
+                    userSvc = component "UserService" "User lifecycle and credential checks." "Spring Service" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/user-service.puml
+                    }
+
+                    taskSvc = component "TaskService" "Task state machine and assignment rules." "Spring Service" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/task-service.puml
+                    }
+
+                    statsSvc = component "StadisticsService" "Aggregates tasks per team/user for charts." "Spring Service" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/stadistics-service.puml
+                    }
+
+                    filterSvc = component "FilterService" "Query composition for filtered task lists." "Spring Service" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/filter-service.puml
+                    }
+
+                    repo = component "Repository Layer" "Spring Data JPA repositories for User and Task." "Spring Data JPA" {
+                        url https://github.com/BlitzExp/OctoTask/blob/main/docs/diagrams/repository-layer.puml
+                    }
                 }
             }
         }

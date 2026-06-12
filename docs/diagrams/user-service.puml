@@ -1,0 +1,20 @@
+@startuml
+
+class UserService {
+	{field} -jdbcTemplate : JdbcTemplate
+	{method} +checkDuplicates ( userData : Map ) : boolean
+	{method} +createTeam ( teamData : Map ) : boolean
+	{method} +createUser ( userData : Map ) : User
+	{method} -insertAndReturnId ( sql : String , params : Object[] ) : Integer
+	{method} -isBlank ( value : String ) : boolean
+	{method} +loginUser ( userData : Map ) : User
+	{method} -requireNotBlank ( value : String , fieldName : String ) : void
+	{method} -stringValue ( data : Map , key : String ) : String
+}
+
+
+
+
+
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+
+class TaskService {
+	{field} -jdbcTemplate : JdbcTemplate
+	{method} +createTask ( taskData : CreateTask ) : Task
+	{method} +deleteTask ( taskId : int ) : void
+	{method} +getTaskById ( taskId : int ) : Task
+	{method} +getTasksByTeamId ( teamId : int ) : Object
+	{method} +getTasksByUserId ( userId : int ) : List
+	{method} +updateTask ( taskId : int , taskData : Task ) : Task
+}
+
+
+
+
+
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+
+class StadisticsService {
+	{field} -jdbcTemplate : JdbcTemplate
+	{method} +getAverageTasksPerStatus ( teamId : int ) : List
+	{method} +getAverageWorkHoursPerSprint ( teamId : int ) : List
+	{method} +getCompletedTasksByMemberPerSprint ( teamId : int ) : List
+	{method} +getLateTasksBySprintId ( teamId : int , sprintId : int ) : Integer
+	{method} +getLateTasksByTeamId ( teamId : int ) : Integer
+	{method} +getMemberStatusBreakdown ( teamId : int , sprintId : int ) : List
+	{method} +getMemberWorkHoursBySprint ( teamId : int , sprintId : int ) : List
+	{method} +getNumCompletedTasksBySprintId ( teamId : int , sprintId : int ) : Integer
+	{method} +getNumCompletedTasksByTeamId ( teamId : int ) : Integer
+	{method} +getNumPendingTasksBySprintId ( teamId : int , sprintId : int ) : Integer
+	{method} +getNumPendingTasksByTeamId ( teamId : int ) : Integer
+	{method} +getNumTasksBySprintId ( teamId : int , sprintId : int ) : Integer
+	{method} +getNumTasksByTeamId ( teamId : int ) : Integer
+	{method} +getWorkHoursByMemberPerSprint ( teamId : int ) : List
+}
+
+
+
+
+
+
+@enduml

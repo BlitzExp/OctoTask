@@ -30,6 +30,7 @@
     height: 7%;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
 }
 
 .analytics-title
@@ -47,32 +48,41 @@
 {
     display: flex;
     align-items: center;
+    gap: 10px;
 }
 
 .analytics-filter-label
 {
     color: white;
-    margin-right: 10px;
-    align-self: start;
-    font-size: 26px;
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0;
 }
 
 .analytics-filter
 {
-    padding: 5px;
-    border-radius: 25px;
-    border: 1px solid #000000;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+}
+
+.analytics-filter option {
+    color: #101828;
     background-color: #ffffff;
-    color: rgb(0, 0, 0);
-    font-size: 26px;
 }
 
 .analytics-filter-row
 {
     display: flex;
-    gap: 32px;
-    height: 10%;
-    align-items: left;
+    gap: 24px;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .analytics-mainKPI-row

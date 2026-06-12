@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react';
 import { MdCalendarMonth, MdInsertDriveFile } from 'react-icons/md';
 import './AnalyticsView.css';

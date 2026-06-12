@@ -20,8 +20,9 @@
         "start": "react-scripts start",
         "build": "CI=false react-scripts build",
         "eject": "react-scripts eject",
-        "test": "vitest run --no-update --silent",
-        "test:watch": "vitest --no-update --silent"
+        "test": "vitest run --no-update --silent --exclude src/tests/smoke/**",
+        "test:smoke": "vitest run --no-update src/tests/smoke",
+        "test:watch": "vitest --no-update --silent --exclude src/tests/smoke/**"
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^4.3.4",

@@ -1,3 +1,7 @@
+# Cursor / IDE session artifacts (do not commit)
+.cursor/
+**/.cursor/
+
 # Compiled class file
 *.class
 

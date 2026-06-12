@@ -1,11 +1,107 @@
 import React, { useEffect, useState } from 'react';
+import { FaExclamationCircle, FaClock, FaSpinner, FaCheckCircle } from 'react-icons/fa';
 import TaskCard from '../../components/task/taskCard';
+import Task from '../../components/task/Task';
 import TaskUpdate from '../../components/taskUpdate/taskUpdate';
-import { getAllTasks, fetchTeamTasksCon } from '../../controller/tasksViewController';
+import { getAllTasks, fetchTeamTasksCon, updateTaskController } from '../../controller/tasksViewController';
 import { getAllSprintsController, getTeamMatesController } from '../../controller/filterController';
 import './taskDashboard.css';
 import TaskForm from '../../components/taskForm/taskForm';
 import FilterHeader from '../../components/filterHeader/filterHeader';
+import OctoMascot from '../../components/brand/OctoMascot';
+import Toast from '../../components/ui/Toast';
+import OctoBuddyDecor from '../../components/brand/OctoBuddyDecor';
+import PodEmptyState from '../../components/layout/PodEmptyState';
+import { isPrivileged } from '../../utils/roles';
+
+const KANBAN_COLUMNS = [
+  {
+    key: 'late',
+    label: 'Late',
+    stateLabel: 'Late',
+    stateId: 4,
+    listClass: 'task-late',
+    headerClass: 'task-late-header',
+    icon: FaExclamationCircle,
+    emptyCopy: 'No overdue tasks — nice swim.',
+    emptyMood: 'celebrate',
+  },
+  {
+    key: 'pending',
+    label: 'Pending',
+    stateLabel: 'Pending',
+    stateId: 2,
+    listClass: 'task-pending',
+    headerClass: 'task-pending-header',
+    icon: FaClock,
+    emptyCopy: 'Calm waters. Drag a task here when ready.',
+    emptyMood: 'idle',
+  },
+  {
+    key: 'progress',
+    label: 'In progress',
+    stateLabel: 'On Going',
+    stateId: 3,
+    listClass: 'task-progress',
+    headerClass: 'task-progress-header',
+    icon: FaSpinner,
+    emptyCopy: 'Nothing in motion — grab one from pending.',
+    emptyMood: 'curious',
+  },
+  {
+    key: 'completed',
+    label: 'Done',
+    stateLabel: 'Done',
+    stateId: 1,
+    listClass: 'task-completed',
+    headerClass: 'task-completed-header',
+    icon: FaCheckCircle,
+    emptyCopy: 'Ship something and it lands here.',
+    emptyMood: 'celebrate',
+  },
+];
+
+function buildTaskUpdatePayload(task, newStateId, sprints = []) {
+  const sprint = sprints.find((s) => Number(s.id) === Number(task.sprintId));
+  return {
+    name: task.name,
+    description: task.description || '',
+    userID: task.userId,
+    userName: task.userName || '',
+    sprintID: task.sprintId,
+    sprintNumber: sprint?.number ?? sprint?.name ?? task.sprintNumber ?? '',
+    sprintEndDate: sprint?.endDate ?? task.sprintEndDate ?? '',
+    stateID: newStateId,
+    priorityID: task.priorityId,
+    linkToFile: task.linkToFile || '',
+    createdAt: task.createdAt || '',
+    updatedAt: new Date().toISOString(),
+    cost: task.cost,
+    spentHours: task.spentHours,
+    visibility: task.visibility ?? 1,
+  };
+}
+
+function cloneTaskWithState(task, stateId) {
+  return new Task({
+    id: task.id,
+    userId: task.userId,
+    userName: task.userName,
+    name: task.name,
+    description: task.description,
+    sprintId: task.sprintId,
+    sprintNumber: task.sprintNumber,
+    sprintEndDate: task.sprintEndDate,
+    stateId,
+    priorityId: task.priorityId,
+    linkToFile: task.linkToFile,
+    createdAt: task.createdAt,
+    updatedAt: task.updatedAt,
+    cost: task.cost,
+    spentHours: task.spentHours,
+    visibility: task.visibility,
+  });
+}
 
 const DEFAULT_FILTERS_BASE = {
   titleQuery: '',
@@ -17,10 +113,9 @@ const DEFAULT_FILTERS_BASE = {
 };
 
 function getDefaultFilters(user) {
-  const isPrivileged = user?.role === 'admin' || user?.role === 'manager';
   return {
     ...DEFAULT_FILTERS_BASE,
-    assigneeId: isPrivileged ? 'all' : String(user?.id ?? 'all'),
+    assigneeId: isPrivileged(user) ? 'all' : String(user?.id ?? 'all'),
   };
 }
 
@@ -33,6 +128,12 @@ function TaskDashboard({ user }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [filterCriteria, setFilterCriteria] = useState(getDefaultFilters(user));
+  const [draggingTaskId, setDraggingTaskId] = useState(null);
+  const [dropTargetKey, setDropTargetKey] = useState(null);
+  const [movingTaskId, setMovingTaskId] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
 
   const handleCardClick = (task) => {
     setSelectedTask(task);
@@ -61,11 +162,13 @@ function TaskDashboard({ user }) {
   useEffect(() => {
     async function fetchTasks() {
       if (!user || !user.id) {
+        setLoading(false);
         return;
       }
+      setLoading(true);
+      setFetchError('');
       try {
-        console.log('Fetching tasks for user:', user.username);
-        if (user.role === 'admin') {
+        if (isPrivileged(user)) {
           const tasksGet = await fetchTeamTasksCon(user.teamId);
           setTasks(tasksGet);
         } else {
@@ -74,6 +177,9 @@ function TaskDashboard({ user }) {
         }
       } catch (error) {
         console.error('Error fetching tasks:', error);
+        setFetchError('Could not load tasks. Check that the backend is running.');
+      } finally {
+        setLoading(false);
       }
     }
     fetchTasks();
@@ -119,6 +225,53 @@ function TaskDashboard({ user }) {
 
   function clearFilters() {
     setFilterCriteria(getDefaultFilters(user));
+  }
+
+  async function handleTaskDrop(taskId, targetStateId) {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || Number(task.stateId) === Number(targetStateId)) {
+      return;
+    }
+
+    const previousTasks = tasks;
+    setMovingTaskId(taskId);
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? cloneTaskWithState(t, targetStateId) : t)),
+    );
+
+    try {
+      const payload = buildTaskUpdatePayload(task, targetStateId, sprints);
+      const updatedTask = await updateTaskController(taskId, payload);
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
+      const column = KANBAN_COLUMNS.find((c) => c.stateId === targetStateId);
+      if (column) {
+        setToast({ message: `Moved to ${column.label}.`, mood: 'celebrate' });
+      }
+    } catch (error) {
+      console.error('Error moving task:', error);
+      setTasks(previousTasks);
+      setToast({ message: 'Could not move the task. Please try again.', mood: 'busy' });
+    } finally {
+      setMovingTaskId(null);
+      setDropTargetKey(null);
+      setDraggingTaskId(null);
+    }
+  }
+
+  function handleColumnDragOver(event, columnKey) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    setDropTargetKey(columnKey);
+  }
+
+  function handleColumnDrop(event, column) {
+    event.preventDefault();
+    const rawId = event.dataTransfer.getData('application/x-octotask-id');
+    const taskId = Number(rawId);
+    if (!taskId) {
+      return;
+    }
+    handleTaskDrop(taskId, column.stateId, column.key);
   }
 
   function getComparableDate(task) {
@@ -202,9 +355,9 @@ function TaskDashboard({ user }) {
           ).values()
         );
 
-  const isPrivileged = user?.role === 'admin' || user?.role === 'manager';
+  const privileged = isPrivileged(user);
 
-  const assigneeOptions = isPrivileged
+  const assigneeOptions = privileged
     ? (teamMates.length > 0
         ? teamMates
         : Array.from(
@@ -219,11 +372,28 @@ function TaskDashboard({ user }) {
           ))
     : [{ id: user?.id, name: user?.username || 'My tasks' }];
 
+  if (!user?.teamId) {
+    return (
+      <main className="task-dashboard-container">
+        <OctoBuddyDecor variant="board" />
+        <h1 className="task-title enterprise-page-title">Task board</h1>
+        <PodEmptyState />
+      </main>
+    );
+  }
+
   return (
     <main className="task-dashboard-container">
-      <h1 className="task-title">Task Dashboard</h1>
+      <OctoBuddyDecor variant="board" />
+      {user?.username && (
+        <p className="octobuddy-page-greeting">Hey {user.username} — your board is ready.</p>
+      )}
+      <h1 className="task-title enterprise-page-title">Task board</h1>
+      <p className="task-board-subtitle">Drag cards between columns to update status.</p>
       <div className="task-actions-row">
-        <button className="create-task-button" onClick={() => setIsCreateModalOpen(true)}>+ Create Task</button>
+        <button className="create-task-button" onClick={() => setIsCreateModalOpen(true)}>
+          + Add to the board
+        </button>
         <FilterHeader
           isOpen={isFilterOpen}
           onToggle={() => setIsFilterOpen((prev) => !prev)}
@@ -237,50 +407,73 @@ function TaskDashboard({ user }) {
       </div>
 
       <p className="task-filter-summary">
-        Showing {filteredTasks.length} of {tasks.length} tasks
+        {loading
+          ? 'Loading your board…'
+          : filteredTasks.length === tasks.length
+            ? `${tasks.length} task${tasks.length === 1 ? '' : 's'} on the board`
+            : `Showing ${filteredTasks.length} of ${tasks.length} tasks`}
       </p>
 
+      {fetchError && (
+        <p className="task-dashboard-error" role="alert">
+          {fetchError}
+        </p>
+      )}
+
       <div className="task-dashboard">
-        <div className="task-list task-late">
-          <div className="task-list-header task-late-header">
-            <p className='task-header-text'>LATE</p>
-          </div>
-          <div className="task-list-body">
-            {filteredTasks.filter(task => task.getStateLabel() === 'Late').map((task) => (
-              <TaskCard key={task.id} task={task} onCardClick={handleCardClick} />
-            ))}
-          </div>
-        </div>
-        <div className="task-list task-pending">
-          <div className="task-list-header task-pending-header">
-            <p className='task-header-text'>PENDING</p>
-          </div>
-          <div className="task-list-body">
-            {filteredTasks.filter(task => task.getStateLabel() === 'Pending').map((task) => (
-              <TaskCard key={task.id} task={task} onCardClick={handleCardClick} />
-            ))}
-          </div>
-        </div>
-        <div className="task-list task-progress">
-          <div className="task-list-header task-progress-header">
-            <p className='task-header-text'>IN PROGRESS</p>
-          </div>
-          <div className="task-list-body">
-            {filteredTasks.filter(task => task.getStateLabel() === 'On Going').map((task) => (
-              <TaskCard key={task.id} task={task} onCardClick={handleCardClick} />
-            ))}
-          </div>
-        </div>
-        <div className="task-list task-completed">
-          <div className="task-list-header task-completed-header">
-            <p className='task-header-text'>COMPLETED</p>
-          </div>
-          <div className="task-list-body">
-            {filteredTasks.filter(task => task.getStateLabel() === 'Done').map((task) => (
-              <TaskCard key={task.id} task={task} onCardClick={handleCardClick} />
-            ))}
-          </div>
-        </div>
+        {KANBAN_COLUMNS.map((column) => {
+          const columnTasks = filteredTasks.filter(
+            (task) => task.getStateLabel() === column.stateLabel,
+          );
+          const isDropTarget = dropTargetKey === column.key && draggingTaskId != null;
+
+          return (
+            <div
+              key={column.key}
+              className={`task-list ${column.listClass}`}
+              onDragOver={(event) => handleColumnDragOver(event, column.key)}
+              onDragEnter={() => setDropTargetKey(column.key)}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                  setDropTargetKey((prev) => (prev === column.key ? null : prev));
+                }
+              }}
+              onDrop={(event) => handleColumnDrop(event, column)}
+            >
+              <div className={`task-list-header ${column.headerClass}`}>
+                <column.icon className="task-header-icon" size={14} aria-hidden="true" />
+                <p className="task-header-text">{column.label}</p>
+                <span className="task-header-count">{columnTasks.length}</span>
+              </div>
+              <div
+                className={`task-list-body${isDropTarget ? ' task-list-body--drag-over' : ''}`}
+              >
+                {columnTasks.length === 0 ? (
+                  <div className="kanban-empty">
+                    <OctoMascot mood={column.emptyMood} size={40} />
+                    <p className="kanban-empty__text">{column.emptyCopy}</p>
+                  </div>
+                ) : (
+                  columnTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onCardClick={handleCardClick}
+                      onDragStart={() => setDraggingTaskId(task.id)}
+                      onDragEnd={() => {
+                        setDraggingTaskId(null);
+                        setDropTargetKey(null);
+                      }}
+                      isDragging={draggingTaskId === task.id}
+                      isSaving={movingTaskId === task.id}
+                      dragDisabled={movingTaskId != null}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {isEditModalOpen && (
@@ -299,15 +492,22 @@ function TaskDashboard({ user }) {
         onClose={() => setIsCreateModalOpen(false)}
         updateTaskList={(newTask) => {
           if (user.role === 'admin') {
-            setTasks(prevTasks => [...prevTasks, newTask]);
-          }else{
-            if (newTask.assigneeId === user.id) {
-              setTasks(prevTasks => [...prevTasks, newTask]);
-            }
+            setTasks((prevTasks) => [...prevTasks, newTask]);
+          } else if (newTask.assigneeId === user.id) {
+            setTasks((prevTasks) => [...prevTasks, newTask]);
           }
+          setToast({ message: 'Added to the board!', mood: 'celebrate' });
         }}
-        taskTitle="Create New Task"
+        taskTitle="Add to the board"
       />
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          mood={toast.mood}
+          onDismiss={() => setToast(null)}
+        />
+      )}
     </main>
   );
 }

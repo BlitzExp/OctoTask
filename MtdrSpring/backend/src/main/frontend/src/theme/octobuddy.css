@@ -1,0 +1,426 @@
+/* OctoBuddy identity — warmth, mascot, purple soul */
+
+:root {
+  --gradient-auth-panel: linear-gradient(160deg, #1b0c33 0%, #2a1654 42%, #161922 100%);
+  --gradient-rail: linear-gradient(180deg, #1f1638 0%, #1a1d26 100%);
+  --color-octo-glow: rgba(123, 92, 255, 0.35);
+  --color-octo-soft: rgba(167, 139, 250, 0.15);
+}
+
+[data-theme='auth-dark'] {
+  --color-bg: #140f24;
+  --color-bg-subtle: #1b0c33;
+  --color-header-bg: #1b0c33;
+}
+
+[data-theme='app-light'] .background-wrapper {
+  background:
+    radial-gradient(ellipse 70% 50% at 100% 0%, var(--color-octo-soft), transparent 55%),
+    var(--color-bg);
+}
+
+/* —— Mascot & auth brand —— */
+
+.octobuddy-brand-panel {
+  background: var(--gradient-auth-panel);
+}
+
+.octobuddy-tentacle-accent {
+  position: absolute;
+  right: -20%;
+  bottom: -15%;
+  width: 280px;
+  height: 280px;
+  border-radius: 45% 55% 40% 60%;
+  background: radial-gradient(circle, var(--color-octo-glow) 0%, transparent 70%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.octobuddy-mascot {
+  animation: octobuddy-float 5s ease-in-out infinite;
+}
+
+@keyframes octobuddy-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .octobuddy-mascot {
+    animation: none;
+  }
+}
+
+.octobuddy-heading .brand-text-buddy {
+  color: var(--color-primary-light);
+  font-weight: 600;
+}
+
+.auth-brand-quote {
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4);
+  border-left: 3px solid var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  background: rgba(123, 92, 255, 0.08);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.auth-brand-logo-wrap.octobuddy-mascot {
+  width: 104px;
+  height: 104px;
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(123, 92, 255, 0.2), rgba(27, 12, 51, 0.6));
+  box-shadow:
+    0 0 40px var(--color-octo-glow),
+    0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* —— Primary CTAs with soul —— */
+
+.loginButton,
+.registerButton,
+.auth-submit-btn,
+.create-task-button {
+  background: var(--gradient-primary);
+  box-shadow:
+    0 2px 8px rgba(123, 92, 255, 0.35),
+    0 8px 24px rgba(90, 61, 219, 0.25);
+}
+
+.loginButton:hover,
+.registerButton:hover,
+.auth-submit-btn:hover,
+.create-task-button:hover {
+  background: linear-gradient(135deg, #8b6cff 0%, #b49bfc 45%, #6a4de8 100%);
+  filter: brightness(1.05);
+}
+
+/* —— Header & rail —— */
+
+.headerTextBuddy {
+  color: var(--color-primary-light);
+  font-weight: 600;
+}
+
+.shell-rail__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--gradient-rail);
+}
+
+.shell-rail__logo {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background-image: url('../assets/logoSymbol.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 2px 8px var(--color-octo-glow));
+}
+
+.shell-rail__brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.shell-rail__brand-name {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-header-text);
+  letter-spacing: -0.02em;
+}
+
+.shell-rail__brand-name span {
+  color: var(--color-primary-light);
+  font-weight: 600;
+}
+
+.shell-rail__brand-tag {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* —— Empty states & greetings —— */
+
+.octobuddy-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  max-width: 480px;
+  margin: var(--space-8) auto;
+}
+
+.octobuddy-empty-state__mascot {
+  width: 72px;
+  height: 72px;
+  background-image: url('../assets/logoSymbol.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 4px 16px var(--color-octo-glow));
+  animation: octobuddy-float 6s ease-in-out infinite;
+}
+
+.octobuddy-empty-state h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.octobuddy-empty-state p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+.octobuddy-page-greeting {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+/* —— Display typography —— */
+
+.font-display,
+.enterprise-page-title,
+.task-title,
+.analytics-title,
+.octobuddy-empty-state h2,
+.auth-brand-heading,
+.auth-card-title {
+  font-family: var(--font-family-display);
+  letter-spacing: -0.02em;
+}
+
+/* —— Page enter —— */
+
+.shell-main--enter {
+  animation: octobuddy-page-in 0.22s ease-out;
+}
+
+@keyframes octobuddy-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-main--enter {
+    animation: none;
+  }
+}
+
+/* —— Sidebar user chip —— */
+
+.shell-rail__footer {
+  margin-top: auto;
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.shell-rail__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(123, 92, 255, 0.1);
+  border: 1px solid rgba(123, 92, 255, 0.2);
+}
+
+.shell-rail__avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: var(--color-text-on-primary);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.shell-rail__user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.shell-rail__user-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-header-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shell-rail__user-role {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+
+/* —— Toast —— */
+
+.octobuddy-toast {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: calc(var(--z-modal) + 10);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 24px var(--color-octo-glow);
+  animation: octobuddy-toast-in 0.28s ease-out;
+  max-width: 360px;
+}
+
+@keyframes octobuddy-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.octobuddy-toast__message {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.octobuddy-toast__close {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  padding: var(--space-1);
+  line-height: 1;
+}
+
+.octobuddy-toast__close:hover {
+  color: var(--color-text-primary);
+}
+
+.octo-mascot-svg {
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 8px var(--color-octo-glow));
+}
+
+/* —— Kanban empty column —— */
+
+.kanban-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-3);
+  min-height: 140px;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.task-list-body--drag-over .kanban-empty {
+  border-color: var(--color-primary);
+  background: var(--color-primary-muted);
+}
+
+.kanban-empty__text {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  max-width: 180px;
+}
+
+/* —— Empty state mascot upgrade —— */
+
+.octobuddy-empty-state__mascot-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: octobuddy-float 6s ease-in-out infinite;
+}
+
+@media (max-width: 900px) {
+  .shell-rail__brand-text {
+    display: none;
+  }
+
+  .shell-rail__brand {
+    justify-content: center;
+    padding: var(--space-3);
+  }
+
+  .shell-rail__user-info {
+    display: none;
+  }
+
+  .shell-rail__footer {
+    padding: var(--space-2);
+  }
+
+  .shell-rail__user {
+    justify-content: center;
+    padding: var(--space-2);
+  }
+
+  .octobuddy-toast {
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: var(--space-4);
+  }
+}

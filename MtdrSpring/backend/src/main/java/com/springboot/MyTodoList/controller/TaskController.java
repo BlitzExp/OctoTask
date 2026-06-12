@@ -7,6 +7,7 @@ import com.springboot.MyTodoList.model.CreateTask;
 import com.springboot.MyTodoList.model.Task;
 import com.springboot.MyTodoList.services.TaskService;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,7 +76,7 @@ public class TaskController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createNewTask(@RequestBody CreateTask taskData) {
+    public ResponseEntity<?> createNewTask(@Valid @RequestBody CreateTask taskData) {
         try {
             var createdTask = taskService.createTask(taskData);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);

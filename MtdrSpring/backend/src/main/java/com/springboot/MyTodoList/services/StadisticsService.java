@@ -43,12 +43,12 @@ public class StadisticsService {
 
     // Number of pending tasks by sprint and team
     public Integer getNumPendingTasksBySprintId(int teamId, int sprintId) {
-        String sql = "SELECT COUNT(*) FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE s.team_id = ? and t.sprint_id = ? AND ts.name != 'DONE' AND t.visible = 1";
+        String sql = "SELECT COUNT(*) FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE s.team_id = ? and t.sprint_id = ? AND ts.name IN ('PENDING', 'ON GOING') AND t.visible = 1";
         return jdbcTemplate.queryForObject(sql, Integer.class, teamId, sprintId);
     }
 
     public Integer getNumPendingTasksByTeamId(int teamId) {
-        String sql = "SELECT COUNT(*) FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE ts.name != 'DONE' AND s.team_id = ? AND t.visible = 1";
+        String sql = "SELECT COUNT(*) FROM TASKS t JOIN TASK_STATE ts ON ts.id = t.state_id JOIN SPRINT s ON s.id = t.sprint_id WHERE ts.name IN ('PENDING', 'ON GOING') AND s.team_id = ? AND t.visible = 1";
         return jdbcTemplate.queryForObject(sql, Integer.class, teamId);
     }
 
@@ -96,8 +96,8 @@ public class StadisticsService {
                 "LEFT JOIN TASKS t \r\n" + //
                 "    ON t.user_id = u.id \r\n" + //
                 "    AND t.sprint_id = ?\r\n" + //
+                "    AND t.visible = 1\r\n" + //
                 "WHERE u.team_id = ?\r\n" + //
-                "  AND t.visible = 1\r\n" + //
                 "GROUP BY u.id, u.name;";
         return jdbcTemplate.query(sql, new Object[] { sprintId, teamId }, (rs, rowNum) -> Map.of(
                 "user_name", rs.getString("user_name"),

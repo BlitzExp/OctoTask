@@ -1,12 +1,18 @@
 package com.springboot.MyTodoList.model;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 
 public class CreateTask {
+    @Min(value = 1, message = "assigneeId must be positive")
     private int assigneeId;
+    @NotBlank(message = "name is required")
     private String name;
     private String description;
+    @Min(value = 1, message = "sprintId must be positive")
     private int sprintId;
+    @Min(value = 1, message = "priority must be between 1 and 3")
     private int priority;
     private String attachment;
     private BigDecimal estimatedHours;

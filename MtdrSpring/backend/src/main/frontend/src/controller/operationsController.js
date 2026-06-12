@@ -1,10 +1,15 @@
 export const getTimeUntilDue = (task) => {
+  if (!task?.sprintEndDate) {
+    return '';
+  }
   const now = new Date();
-  // Asegura que la fecha sea un objeto Date, incluso si viene como string ISO
   const dueDate =
     typeof task.sprintEndDate === "string"
       ? new Date(task.sprintEndDate)
       : task.sprintEndDate;
+  if (!(dueDate instanceof Date) || Number.isNaN(dueDate.getTime())) {
+    return '';
+  }
   const diffInMs = dueDate - now;
   const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
 

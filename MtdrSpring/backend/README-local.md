@@ -1,4 +1,43 @@
-# Backend Local Run Guide (Windows)
+# Backend Local Run Guide
+
+## Quick start (no Oracle) — `local` profile
+
+Uses in-memory H2 with a seeded **Octo Pod** team. Best for UI work on your machine.
+
+```bash
+cd MtdrSpring/backend
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+Backend: **http://localhost:8080**  
+Frontend (separate terminal): `cd src/main/frontend && npm start` → **http://localhost:3000** (or **3001** if 3000 is taken)
+
+### Seeded team — Octo Pod
+
+| Role | Username | Email | Password |
+|------|----------|-------|----------|
+| Admin | `localdev` | `local@octotask.dev` | `localdev123` |
+| Manager | `maya` | `maya@octotask.dev` | `pod123456` |
+| Developer | `developer` | `dev@octotask.dev` | `dev123456` |
+| Developer | `alex` | `alex@octotask.dev` | `dev123456` |
+| Developer | `jordan` | `jordan@octotask.dev` | `dev123456` |
+| Developer | `sam` | `sam@octotask.dev` | `dev123456` |
+| Developer | `riley` | `riley@octotask.dev` | `dev123456` |
+| Developer | `casey` | `casey@octotask.dev` | `dev123456` |
+
+Sign in with **username or email** and the password above.
+
+### Mock data snapshot
+
+- **3 sprints** — sprint 1 (past), sprint 2 (current), sprint 3 (upcoming)
+- **35 tasks** across all kanban columns and assignees
+- **Analytics** — use sprint **2** or **All Sprints**; filter by developer as `localdev` or `maya`
+
+Data resets when the backend stops (in-memory H2).
+
+---
+
+## Oracle setup (production-like)
 
 This backend uses Oracle DB (wallet/TNS) and can run locally with either:
 
